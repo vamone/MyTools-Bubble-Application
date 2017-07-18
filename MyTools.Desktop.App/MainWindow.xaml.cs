@@ -20,11 +20,40 @@ namespace MyTools.Desktop.App
         public MainWindow()
         {
             InitializeComponent();
+
+            this.MainIconArea.MouseDown += OnMouseDown;
+            this.MainIconArea.MouseLeave += OnMouseLeave;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+
+            if (e.RightButton == MouseButtonState.Pressed)
+            {
+
+            }
+
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                bool isDoubleClick = e.ClickCount >= 2;
+                if (isDoubleClick)
+                {
+
+                }
+            }
+        }
+
+        private void OnMouseLeave(object sender, MouseEventArgs e)
+        {
         }
     }
 }

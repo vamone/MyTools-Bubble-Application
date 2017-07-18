@@ -16,7 +16,7 @@
     </Window.Background>
     
     <Grid>
-        <Ellipse Fill="#FF9F9FA4" HorizontalAlignment="Left" Height="100" Margin="390,390,0,0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
+        <Ellipse x:Name="MainIconArea" Fill="#FF9F9FA4" HorizontalAlignment="Left" Height="100" Margin="390,390,0,0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
 
     </Grid>
 </Window>
