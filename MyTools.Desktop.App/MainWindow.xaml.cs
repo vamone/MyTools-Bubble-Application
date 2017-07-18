@@ -21,13 +21,20 @@ namespace MyTools.Desktop.App
         {
             InitializeComponent();
 
-            this.MainIconArea.MouseDown += OnMouseDown;
-            this.MainIconArea.MouseLeave += OnMouseLeave;
+            this.GridMain.MouseDown += OnMouseDown;
+            this.GridMain.MouseLeave += OnMouseLeave;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var list = new List<string> { "walle@robot.com", "Q1w2e3r4@", "Q1w2e3", "Q1w2e3r4!", "santa@clause.com", "4111111111111111" };
 
+            foreach (var item in list)
+            {
+                var border = WorkAreaFactory.Build(item);
+
+                this.WorkArea.Children.Add(border);
+            }
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)

@@ -8,15 +8,18 @@
         AllowsTransparency="True" 
         WindowStyle="None" 
         ResizeMode="NoResize" 
-        Topmost="True"
+        Topmost="False"
         Title="MainWindow" Height="500" Width="500" Loaded="Window_Loaded">
 
     <Window.Background>
         <SolidColorBrush Opacity="0" Color="White"/>
     </Window.Background>
-    
-    <Grid>
-        <Ellipse x:Name="MainIconArea" Fill="#FF9F9FA4" HorizontalAlignment="Left" Height="100" Margin="390,390,0,0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
 
+    <Grid x:Name="GridMain" Margin="0">
+        <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
+            <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,10"/>
+
+            <Ellipse Visibility="Collapsed" x:Name="MainIconArea" Fill="#FF9F9FA4" HorizontalAlignment="Left" Height="100" Margin="0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
+        </StackPanel>
     </Grid>
 </Window>
