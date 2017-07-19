@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -47,8 +43,7 @@ namespace MyTools.Desktop.App
 
             stackPanelHorisontal.Children.Add(button);
             stackPanelHorisontal.Children.Add(textBlockMessage);
-            //stackPanelHorisontal.RegisterName(textBlockMessage.Name, text);
-
+            
             grid.Children.Add(stackPanelHorisontal);
 
             var border = new Border

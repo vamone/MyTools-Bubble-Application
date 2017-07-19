@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MyTools.Desktop.App
 {
@@ -40,7 +29,7 @@ namespace MyTools.Desktop.App
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var list = new List<string> { "walle@robot.com", "Q1w2e3r4@", "Q1w2e3", "Q1w2e3r4!", "santa@clause.com", "4111111111111111" };
+            var list = FileHelper.GetLines();
 
             foreach (var item in list)
             {
