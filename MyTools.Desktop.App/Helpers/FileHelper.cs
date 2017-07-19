@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace MyTools.Desktop.App
+namespace MyTools.Desktop.App.Helpers
 {
     public static class FileHelper
     {

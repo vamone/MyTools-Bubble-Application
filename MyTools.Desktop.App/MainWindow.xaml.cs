@@ -1,17 +1,44 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
+
+using MyTools.Desktop.App.Helpers;
 
 namespace MyTools.Desktop.App
 {
     public partial class MainWindow : Window
     {
+        private readonly DispatcherTimer AreaTimer;
+
         public MainWindow()
         {
             InitializeComponent();
 
             this.GridMain.MouseDown += OnMouseDown;
             this.GridMain.MouseLeave += OnMouseLeave;
+
+            this.AreaTimer = new DispatcherTimer();
+            this.AreaTimer.Tick += ClearAreaTimerEventProcessor;
+            this.AreaTimer.Interval = new TimeSpan(0, 0, 1);
+        }
+
+        private void ClearAreaTimerEventProcessor(object sender, EventArgs e)
+        {
+            this.ActionNotificationText.Content = string.Empty;
+
+            bool isActive = this.WindowState == WindowState.Normal;
+            if (isActive)
+            {
+                this.Topmost = true;
+            }
+
+            bool isMinimized = this.WindowState == WindowState.Minimized;
+            if(isMinimized)
+            {
+                this.Topmost = false;
+            }
         }
 
         private void CopyClick(object sender, RoutedEventArgs e)
@@ -29,6 +56,8 @@ namespace MyTools.Desktop.App
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            this.AreaTimer.Start();
+
             var list = FileHelper.GetLines();
 
             foreach (var item in list)
@@ -63,6 +92,11 @@ namespace MyTools.Desktop.App
 
         private void OnMouseLeave(object sender, MouseEventArgs e)
         {
+        }
+
+        private void ButtonMinimizedWindow_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MyTools.Desktop.App
+namespace MyTools.Desktop.App.Helpers
 {
     public static class WorkAreaFactory
     {
