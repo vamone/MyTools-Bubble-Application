@@ -12,7 +12,7 @@ namespace MyTools.Desktop.App
 {
     public static class WorkAreaFactory
     {
-        public static Border Build(string text)
+        public static Border Build(string text, Action<object, RoutedEventArgs> copyClick)
         {
             var grid = new Grid
             {
@@ -27,9 +27,15 @@ namespace MyTools.Desktop.App
                 Width = 220
             };
 
+            var button = new Button();
+            button.Content = "Copy";
+            button.Name = "Copy";
+            button.Click += new RoutedEventHandler(copyClick);
+
             var textBlockMessage = new TextBlock
             {
                 Text = text,
+                Name = $"textInput",
                 FontStyle = FontStyles.Normal,
                 Margin = new Thickness { Left = 5, Bottom = 5 },
                 Foreground = new SolidColorBrush(Colors.WhiteSmoke),
@@ -39,7 +45,9 @@ namespace MyTools.Desktop.App
                 FontSize = 15
             };
 
+            stackPanelHorisontal.Children.Add(button);
             stackPanelHorisontal.Children.Add(textBlockMessage);
+            //stackPanelHorisontal.RegisterName(textBlockMessage.Name, text);
 
             grid.Children.Add(stackPanelHorisontal);
 

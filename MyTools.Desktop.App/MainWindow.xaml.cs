@@ -25,13 +25,26 @@ namespace MyTools.Desktop.App
             this.GridMain.MouseLeave += OnMouseLeave;
         }
 
+        private void CopyClick(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+
+            var stackPanel = button.Parent as StackPanel;
+
+            var items = stackPanel.Children[1] as TextBlock;
+
+            Clipboard.SetText(items.Text);
+
+            this.ActionNotificationText.Content = "Copied";
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var list = new List<string> { "walle@robot.com", "Q1w2e3r4@", "Q1w2e3", "Q1w2e3r4!", "santa@clause.com", "4111111111111111" };
 
             foreach (var item in list)
             {
-                var border = WorkAreaFactory.Build(item);
+                var border = WorkAreaFactory.Build(item, this.CopyClick);
 
                 this.WorkArea.Children.Add(border);
             }

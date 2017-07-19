@@ -17,6 +17,7 @@
 
     <Grid x:Name="GridMain" Margin="0">
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
+            <Label x:Name="ActionNotificationText" />
             <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,10"/>
 
             <Ellipse Visibility="Collapsed" x:Name="MainIconArea" Fill="#FF9F9FA4" HorizontalAlignment="Left" Height="100" Margin="0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
