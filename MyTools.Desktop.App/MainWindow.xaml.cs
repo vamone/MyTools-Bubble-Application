@@ -85,7 +85,7 @@ namespace MyTools.Desktop.App
                 bool isDoubleClick = e.ClickCount >= 2;
                 if (isDoubleClick)
                 {
-
+                    this.WindowState = WindowState.Minimized;
                 }
             }
         }
