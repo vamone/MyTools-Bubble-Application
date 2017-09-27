@@ -31,6 +31,11 @@ namespace MyTools.Desktop.App.Helpers
                 Background = new SolidColorBrush(Colors.Black),
             };
 
+            if(button.IsMouseOver)
+            {
+                button.Background = new SolidColorBrush(Colors.Black);
+            }
+
             return button;
         }
     }

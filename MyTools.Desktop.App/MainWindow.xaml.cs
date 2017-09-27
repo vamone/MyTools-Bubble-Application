@@ -51,7 +51,7 @@ namespace MyTools.Desktop.App
 
             Clipboard.SetText(items.Text);
 
-            this.ActionNotificationText.Content = "Copied";
+            this.ActionNotificationText.Content = "COPIED";
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
