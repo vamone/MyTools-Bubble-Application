@@ -13,18 +13,18 @@ namespace MyTools.Desktop.App.Helpers
             var grid = new Grid
             {
                 Cursor = Cursors.Hand,
-                Width = 230,
-                Margin = new Thickness(5)
+                Width = 200,
+                Margin = new Thickness(0)
             };
 
             var stackPanelHorisontal = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Width = 220
+                Width = 190
             };
 
-            var button = new Button();
-            button.Content = "Copy";
+            var button = ElementHelper.ButtonWithIcon(ImagesContants.CopyIcon);
+            button.BorderThickness = new Thickness(0);
             button.Name = "Copy";
             button.Click += new RoutedEventHandler(copyClick);
 
@@ -33,12 +33,12 @@ namespace MyTools.Desktop.App.Helpers
                 Text = text,
                 Name = $"textInput",
                 FontStyle = FontStyles.Normal,
-                Margin = new Thickness { Left = 5, Bottom = 5 },
-                Foreground = new SolidColorBrush(Colors.WhiteSmoke),
+                Margin = new Thickness { Left = 10 },
+                Foreground = new SolidColorBrush(Colors.Gray),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.Wrap,
-                FontSize = 15
+                FontSize = 15,
             };
 
             stackPanelHorisontal.Children.Add(button);
@@ -49,9 +49,9 @@ namespace MyTools.Desktop.App.Helpers
             var border = new Border
             {
                 Background = new SolidColorBrush(Colors.Black),
-                Opacity = 0.70,
-                CornerRadius = new CornerRadius(10, 10, 10, 10),
-                Margin = new Thickness { Left = 5, Top = 5, Right = 5, Bottom = 5 },
+                Opacity = 0.65,
+                CornerRadius = new CornerRadius(5),
+                Margin = new Thickness { Left = 0, Top = 5, Right = 5, Bottom = 5 },
                 Uid = "",
                 Child = grid
             };
