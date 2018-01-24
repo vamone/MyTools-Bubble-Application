@@ -9,7 +9,7 @@
         WindowStyle="None" 
         ResizeMode="NoResize" 
         Topmost="False"
-        Title="MainWindow" Height="500" Width="500" Loaded="Window_Loaded">
+        Title="MainWindow" Height="500" Width="200" Loaded="Window_Loaded">
 
     <Window.Background>
         <SolidColorBrush Opacity="0" Color="White"/>
@@ -30,6 +30,7 @@
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
             <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,0"/>
             <Label x:Name="ActionNotificationText" VerticalAlignment="Bottom" HorizontalAlignment="Right"  />
+            <!--<Button x:Name="SettingButton" Click="SettingButton_Click">Settings</Button>-->
         </StackPanel>
         
     </Grid>

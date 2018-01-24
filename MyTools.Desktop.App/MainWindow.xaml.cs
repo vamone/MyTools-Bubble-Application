@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 
 using MyTools.Desktop.App.Helpers;
+using MyTools.Desktop.App.Utilities;
 
 namespace MyTools.Desktop.App
 {
@@ -22,6 +23,28 @@ namespace MyTools.Desktop.App
             this.AreaTimer = new DispatcherTimer();
             this.AreaTimer.Tick += ClearAreaTimerEventProcessor;
             this.AreaTimer.Interval = new TimeSpan(0, 0, 1);
+        }
+
+        public void OnLoad()
+        {
+            this.WorkArea.Children.Clear();
+
+            this.AreaTimer.Start();
+
+            var list = FileHelper.GetLines();
+
+            double opacity = 6.5;
+
+            double.TryParse(RegistryUtility.Read("OpacitySlider"), out opacity);
+
+            opacity = opacity / 10;
+
+            foreach (var item in list)
+            {
+                var border = WorkAreaFactory.Build(item, opacity, this.CopyClick);
+
+                this.WorkArea.Children.Add(border);
+            }
         }
 
         private void ClearAreaTimerEventProcessor(object sender, EventArgs e)
@@ -56,16 +79,7 @@ namespace MyTools.Desktop.App
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.AreaTimer.Start();
-
-            var list = FileHelper.GetLines();
-
-            foreach (var item in list)
-            {
-                var border = WorkAreaFactory.Build(item, this.CopyClick);
-
-                this.WorkArea.Children.Add(border);
-            }
+            this.OnLoad();
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -77,7 +91,19 @@ namespace MyTools.Desktop.App
 
             if (e.RightButton == MouseButtonState.Pressed)
             {
+                bool isSettingsWindowOpened = WindowHelper.IsWindowOpened<SettingsWindow>();
+                if (isSettingsWindowOpened)
+                {
+                    var window = WindowHelper.GetWindowByClassName<SettingsWindow>();
 
+                    window.Close();
+
+                    return;
+                }
+
+                var settingsWindow = new SettingsWindow();
+
+                settingsWindow.Show();
             }
 
             if (e.ChangedButton == MouseButton.Left)
@@ -97,6 +123,23 @@ namespace MyTools.Desktop.App
         private void ButtonMinimizedWindow_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+        }
+
+        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool isSettingsWindowOpened = WindowHelper.IsWindowOpened<SettingsWindow>();
+            if (isSettingsWindowOpened)
+            {
+                var window = WindowHelper.GetWindowByClassName<SettingsWindow>();
+
+                window.Close();
+
+                return;
+            }
+
+            var settingsWindow = new SettingsWindow();
+
+            settingsWindow.Show();
         }
     }
 }
