@@ -117,6 +117,7 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="ToDo.txt" />
     <Resource Include="copyIcon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

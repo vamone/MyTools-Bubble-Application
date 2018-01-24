@@ -12,7 +12,7 @@ namespace MyTools.Desktop.App.Helpers
         {
             var lines = File.ReadLines(_storageFileName);
 
-            var fiteredLines = lines.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+            var fiteredLines = lines.Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith("#")).Select(x => x.Trim()).ToList();
 
             return fiteredLines;
         }
