@@ -62,6 +62,7 @@
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\OpacityHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
+    <Compile Include="Helpers\RegexHelper.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Helpers\WorkAreaFactory.cs" />
     <Compile Include="SettingsWindow.xaml.cs">

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,9 +15,18 @@ namespace MyTools.Desktop.App
     {
         private readonly DispatcherTimer AreaTimer;
 
+        private readonly DispatcherTimer _reminderTimer;
+
+        private ICollection<string> _clipboards;
+
+        private ICollection<string> _showedReminders;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            this._clipboards = new List<string>();
+            this._showedReminders = new List<string>();
 
             this.GridMain.MouseDown += OnMouseDown;
             this.GridMain.MouseLeave += OnMouseLeave;
@@ -23,22 +34,35 @@ namespace MyTools.Desktop.App
             this.AreaTimer = new DispatcherTimer();
             this.AreaTimer.Tick += ClearAreaTimerEventProcessor;
             this.AreaTimer.Interval = new TimeSpan(0, 0, 1);
+
+            this._reminderTimer = new DispatcherTimer();
+            this._reminderTimer.Tick += ReminderTimerEventProcessor;
+            this._reminderTimer.Interval = new TimeSpan(0, 0, 10);
         }
 
         public void OnLoad()
         {
             this.WorkArea.Children.Clear();
 
-            this.AreaTimer.Start();
+            if (!this.AreaTimer.IsEnabled)
+            {
+                this.AreaTimer.Start();
+            }
 
-            var list = FileHelper.GetLines();
+            if (!this._reminderTimer.IsEnabled)
+            {
+                this._reminderTimer.Start();
+            }
 
             double opacity = OpacityHelper.GetBackgroundOpacity();
 
-            foreach (var item in list)
+            var clipboards = FileHelper.GetLines();
+
+            this._clipboards = clipboards;
+
+            foreach (var item in this._clipboards.Where(x => !x.StartsWith("!")).ToList())
             {
                 var border = WorkAreaFactory.Build(item, opacity, this.CopyClick);
-
                 this.WorkArea.Children.Add(border);
             }
         }
@@ -57,6 +81,36 @@ namespace MyTools.Desktop.App
             if(isMinimized)
             {
                 this.Topmost = false;
+            }
+        }
+
+        private void ReminderTimerEventProcessor(object sender, EventArgs e)
+        {
+            string regexReminderPattern = "^!([0-9]{2}:[0-9]{2});(.*)$"; //TODO: BETTER REGEX
+
+            double opacity = OpacityHelper.GetBackgroundOpacity();
+
+            var reminders = this._clipboards.Where(x => x.StartsWith("!")).ToList();
+            foreach (var item in reminders)
+            {
+                string reminderTime = RegexHelper.GetGroupValue(item, regexReminderPattern, 1);
+
+                if(this._showedReminders.Contains(reminderTime))
+                {
+                    continue;
+                }
+
+                string reminderText = RegexHelper.GetGroupValue(item, regexReminderPattern, 2);
+
+                var timeSpanReminder = TimeSpan.Parse(reminderTime);
+                var timeSpanNow = DateTime.Now.TimeOfDay;
+
+                if (timeSpanReminder.Hours == timeSpanNow.Hours 
+                    && timeSpanReminder.Minutes == timeSpanNow.Minutes)
+                {
+                    MessageBox.Show(reminderText, "Reminder");
+                    this._showedReminders.Add(reminderTime);
+                }
             }
         }
 

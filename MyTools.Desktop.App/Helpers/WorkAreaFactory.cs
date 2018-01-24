@@ -8,7 +8,7 @@ namespace MyTools.Desktop.App.Helpers
 {
     public static class WorkAreaFactory
     {
-        public static Border Build(string text, double backgroundOpacity,  Action<object, RoutedEventArgs> copyClick)
+        public static Border Build(string text, double backgroundOpacity,  Action<object, RoutedEventArgs> copyClick, bool isReminder = false)
         {
             var grid = new Grid
             {
