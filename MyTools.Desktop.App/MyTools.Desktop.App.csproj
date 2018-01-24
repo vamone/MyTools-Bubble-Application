@@ -60,6 +60,7 @@
     <Compile Include="Helpers\BrushHelper.cs" />
     <Compile Include="Helpers\ElementHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\OpacityHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Helpers\WorkAreaFactory.cs" />

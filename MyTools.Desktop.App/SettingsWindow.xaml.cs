@@ -18,6 +18,10 @@ namespace MyTools.Desktop.App
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            double opacity = OpacityHelper.GetBackgroundOpacity();
+
+            this.OpacitySlider.Value = opacity;
+
             string text = FileHelper.GetAllText();
 
             this.ClipBoardsEditor.Text = text;
@@ -29,23 +33,13 @@ namespace MyTools.Desktop.App
 
             double opacity = this.OpacitySlider.Value;
 
-            RegistryUtility.Save("OpacitySlider", opacity.ToString());
+            OpacityHelper.SaveBackgroundOpacity(opacity);
 
             var window = WindowHelper.GetWindowByClassName<MainWindow>();
 
             window.OnLoad();
 
             this.Close();
-        }
-
-        private void OpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            var slider = sender as Slider;
-            double value = slider.Value / 10;
-
-            string stringValue = value.ToString("0.0");
-
-           // this.OpacityValueLabel.Content = stringValue;
         }
     }
 }

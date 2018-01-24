@@ -8,7 +8,7 @@ namespace MyTools.Desktop.App.Helpers
 {
     public static class WorkAreaFactory
     {
-        public static Border Build(string text, double opacity, Action<object, RoutedEventArgs> copyClick)
+        public static Border Build(string text, double backgroundOpacity,  Action<object, RoutedEventArgs> copyClick)
         {
             var grid = new Grid
             {
@@ -49,7 +49,7 @@ namespace MyTools.Desktop.App.Helpers
             var border = new Border
             {
                 Background = new SolidColorBrush(Colors.Black),
-                Opacity = opacity,
+                Opacity = backgroundOpacity,
                 CornerRadius = new CornerRadius(5),
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
                 Uid = "",

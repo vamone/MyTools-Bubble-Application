@@ -7,11 +7,14 @@
         mc:Ignorable="d"
         Title="Settings" Height="500" Width="500" Loaded="Window_Loaded">
     <Grid Margin="10,0">
-        <Slider x:Name="OpacitySlider" Margin="0,41,0,0" VerticalAlignment="Top" Value="6" ValueChanged="OpacitySlider_ValueChanged"/>
-        <TextBox x:Name="ClipBoardsEditor" Margin="0,95,0,45" AcceptsReturn="True"  TextWrapping="Wrap"/>
+        <Slider x:Name="OpacitySlider" Margin="0,41,60,0" VerticalAlignment="Top" Value="6" Minimum="0.1" LargeChange="0.1" Maximum="1" TickFrequency="0.1" />
+        <TextBox x:Name="ClipBoardsEditor" Margin="0,95,0,45" AcceptsReturn="True"  TextWrapping="Wrap"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"/>
         <Button x:Name="SaveSettingsButton" Content="Save" HorizontalAlignment="Right" Margin="0,0,0,10" VerticalAlignment="Bottom" Click="SaveSettingsButton_Click" Width="100"/>
-        <Label Content="Change Opacity" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top"/>
+        <Label Content="Background Opacity" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top"/>
         <Label Content="My Clipboards" HorizontalAlignment="Left" Margin="0,64,0,0" VerticalAlignment="Top"/>
         <Label Content="Created by Valentine Monych in 2017" HorizontalAlignment="Left" Margin="0,0,0,10" VerticalAlignment="Bottom" RenderTransformOrigin="0.132,-2.9"/>
+        <TextBlock x:Name="OpacityValueTextBlock" Text="{Binding ElementName=OpacitySlider,Path=Value, StringFormat=0.00}" HorizontalAlignment="Left" Margin="417,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top"></TextBlock>
     </Grid>
 </Window>

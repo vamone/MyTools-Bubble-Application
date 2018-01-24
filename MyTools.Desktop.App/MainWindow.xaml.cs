@@ -33,11 +33,7 @@ namespace MyTools.Desktop.App
 
             var list = FileHelper.GetLines();
 
-            double opacity = 6.5;
-
-            double.TryParse(RegistryUtility.Read("OpacitySlider"), out opacity);
-
-            opacity = opacity / 10;
+            double opacity = OpacityHelper.GetBackgroundOpacity();
 
             foreach (var item in list)
             {
