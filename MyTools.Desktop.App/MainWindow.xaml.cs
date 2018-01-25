@@ -43,6 +43,7 @@ namespace MyTools.Desktop.App
         public void OnLoad()
         {
             this.WorkArea.Children.Clear();
+            this._showedReminders.Clear();
 
             if (!this.AreaTimer.IsEnabled)
             {
@@ -108,8 +109,15 @@ namespace MyTools.Desktop.App
                 if (timeSpanReminder.Hours == timeSpanNow.Hours 
                     && timeSpanReminder.Minutes == timeSpanNow.Minutes)
                 {
-                    MessageBox.Show(reminderText, "Reminder");
-                    this._showedReminders.Add(reminderTime);
+                    bool isReminderWindowOpened = WindowHelper.IsWindowOpened<ReminderWindow>();
+                    if (!isReminderWindowOpened)
+                    {
+                        var window = new ReminderWindow();
+                        window.Show();
+                        window.SetReminderText(reminderText);
+
+                        this._showedReminders.Add(reminderTime);
+                    }
                 }
             }
         }
@@ -145,14 +153,11 @@ namespace MyTools.Desktop.App
                 if (isSettingsWindowOpened)
                 {
                     var window = WindowHelper.GetWindowByClassName<SettingsWindow>();
-
                     window.Close();
-
                     return;
                 }
 
                 var settingsWindow = new SettingsWindow();
-
                 settingsWindow.Show();
             }
 
