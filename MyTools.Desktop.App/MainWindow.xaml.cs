@@ -87,7 +87,7 @@ namespace MyTools.Desktop.App
 
         private void ReminderTimerEventProcessor(object sender, EventArgs e)
         {
-            string regexReminderPattern = "^!([0-9]{2}:[0-9]{2});(.*)$"; //TODO: BETTER REGEX
+            string regexReminderPattern = "^!([0-9]{1,2}:[0-9]{2});(.*)$"; //TODO: BETTER REGEX
 
             double opacity = OpacityHelper.GetBackgroundOpacity();
 
