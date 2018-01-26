@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MyTools.Desktop.App"
         mc:Ignorable="d"
-        Title="Reminder" Height="77.542" Width="265.678" Topmost="True">
+        Title="Reminder" Height="77.542" Width="265.678" Topmost="True" Background="#FF1E1E1E" Foreground="#FFADADAD">
     <Grid>
-        <TextBlock x:Name="ReminderTextBlock" Margin="10" TextWrapping="Wrap"/>
+        <TextBlock x:Name="ReminderTextBlock" Margin="10" TextWrapping="Wrap" Text="Reminder"/>
 
     </Grid>
 </Window>

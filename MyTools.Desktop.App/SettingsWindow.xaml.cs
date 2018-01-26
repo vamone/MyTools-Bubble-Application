@@ -42,5 +42,15 @@ namespace MyTools.Desktop.App
 
             this.Close();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new ReminderWindow();
+            window.Show();
+
+            string reminderMessage = "17:30 - It works in here.";
+
+            window.SetReminderText(reminderMessage);
+        }
     }
 }

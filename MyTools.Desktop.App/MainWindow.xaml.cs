@@ -114,7 +114,10 @@ namespace MyTools.Desktop.App
                     {
                         var window = new ReminderWindow();
                         window.Show();
-                        window.SetReminderText(reminderText);
+
+                        string reminderMessage = $"{reminderTime} - {reminderText}";
+
+                        window.SetReminderText(reminderMessage);
 
                         this._showedReminders.Add(reminderTime);
                     }
