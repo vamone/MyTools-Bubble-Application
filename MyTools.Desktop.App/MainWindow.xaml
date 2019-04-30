@@ -28,7 +28,7 @@
 
     <Grid x:Name="GridMain" Margin="0">
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
-            <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,0"/>
+            <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="30,0,0,0" MouseEnter="WorkArea_MouseEnter" MouseLeave="WorkArea_MouseLeave"/>
             <Label x:Name="ActionNotificationText" VerticalAlignment="Bottom" HorizontalAlignment="Right"  />
             <!--<Button x:Name="SettingButton" Click="SettingButton_Click">Settings</Button>-->
         </StackPanel>

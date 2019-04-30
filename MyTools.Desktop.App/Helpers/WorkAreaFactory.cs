@@ -8,7 +8,7 @@ namespace MyTools.Desktop.App.Helpers
 {
     public static class WorkAreaFactory
     {
-        public static Border Build(string text, double backgroundOpacity,  Action<object, RoutedEventArgs> copyClick, bool isReminder = false)
+        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double innerMargin = 0)
         {
             var grid = new Grid
             {
@@ -43,7 +43,7 @@ namespace MyTools.Desktop.App.Helpers
 
             stackPanelHorisontal.Children.Add(button);
             stackPanelHorisontal.Children.Add(textBlockMessage);
-            
+
             grid.Children.Add(stackPanelHorisontal);
 
             var border = new Border
@@ -53,8 +53,25 @@ namespace MyTools.Desktop.App.Helpers
                 CornerRadius = new CornerRadius(5),
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
                 Uid = "",
-                Child = grid
+                Child = grid,
             };
+
+            if (innerMargin > 0)
+            {
+                border.Margin = new Thickness(innerMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+
+                border.MouseEnter += (sender, eventArgs) =>
+                {
+                    border.Margin = new Thickness(0, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+                };
+
+                border.MouseLeave += (sender, eventArgs) =>
+                {
+                    border.Margin = new Thickness(innerMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+                };
+
+                border.CornerRadius = new CornerRadius { TopLeft = 5, BottomLeft = 5 };
+            }
 
             return border;
         }

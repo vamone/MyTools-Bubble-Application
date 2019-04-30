@@ -1,13 +1,13 @@
-﻿using System;
+﻿using MyTools.Desktop.App.Helpers;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-
-using MyTools.Desktop.App.Helpers;
-using MyTools.Desktop.App.Utilities;
 
 namespace MyTools.Desktop.App
 {
@@ -17,9 +17,13 @@ namespace MyTools.Desktop.App
 
         private readonly DispatcherTimer _reminderTimer;
 
+        private readonly DispatcherTimer _updatesCheckTimer;
+
         private ICollection<string> _clipboards;
 
         private ICollection<string> _showedReminders;
+
+        private DateTime NextCheckUpdatesAt;
 
         public MainWindow()
         {
@@ -38,6 +42,38 @@ namespace MyTools.Desktop.App
             this._reminderTimer = new DispatcherTimer();
             this._reminderTimer.Tick += ReminderTimerEventProcessor;
             this._reminderTimer.Interval = new TimeSpan(0, 0, 10);
+
+            this._updatesCheckTimer = new DispatcherTimer();
+            this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
+            this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
+
+            this.NextCheckUpdatesAt = DateTime.Now;
+        }
+
+        private void UpdatesCheckTimerEventProcessor(object sender, EventArgs e)
+        {
+            if (this.NextCheckUpdatesAt >= DateTime.Now)
+            {
+                return;
+            }
+
+            bool hasUpdates = UpdateHelper.HasUpdates(Assembly.GetExecutingAssembly(), null);
+            if (hasUpdates)
+            {
+                var updateAvailableResults = UpdateAppMessageBoxWrapper.Show("New version available. Download and update?", "MyTools Updates", MessageBoxButton.YesNoCancel);
+                if (updateAvailableResults == MessageBoxResult.Cancel || updateAvailableResults == MessageBoxResult.No ||
+                      updateAvailableResults == MessageBoxResult.None)
+                {
+                    this.NextCheckUpdatesAt = DateTime.Now.AddHours(24);
+                    return;
+                }
+
+                if (updateAvailableResults == MessageBoxResult.Yes)
+                {
+                    Process.Start("MyTools.Desktop.Updater.exe");
+                    Process.GetCurrentProcess().Kill();
+                }
+            }
         }
 
         public void OnLoad()
@@ -55,16 +91,20 @@ namespace MyTools.Desktop.App
                 this._reminderTimer.Start();
             }
 
-            double opacity = OpacityHelper.GetBackgroundOpacity();
+            double opacity = SliderHelper.GetBackgroundOpacity();
+            double innerMargin = SliderHelper.GetInnerMargin();
 
             var clipboards = FileHelper.GetLines();
 
             this._clipboards = clipboards;
 
+            int i = 0;
             foreach (var item in this._clipboards.Where(x => !x.StartsWith("!")).ToList())
             {
-                var border = WorkAreaFactory.Build(item, opacity, this.CopyClick);
+                var border = WorkAreaFactory.Build(item, opacity, this.CopyClick, innerMargin: innerMargin);
                 this.WorkArea.Children.Add(border);
+
+                i++;
             }
         }
 
@@ -79,7 +119,7 @@ namespace MyTools.Desktop.App
             }
 
             bool isMinimized = this.WindowState == WindowState.Minimized;
-            if(isMinimized)
+            if (isMinimized)
             {
                 this.Topmost = false;
             }
@@ -89,14 +129,14 @@ namespace MyTools.Desktop.App
         {
             string regexReminderPattern = "^!([0-9]{1,2}:[0-9]{2});(.*)$"; //TODO: BETTER REGEX
 
-            double opacity = OpacityHelper.GetBackgroundOpacity();
+            double opacity = SliderHelper.GetBackgroundOpacity();
 
             var reminders = this._clipboards.Where(x => x.StartsWith("!")).ToList();
             foreach (var item in reminders)
             {
                 string reminderTime = RegexHelper.GetGroupValue(item, regexReminderPattern, 1);
 
-                if(this._showedReminders.Contains(reminderTime))
+                if (this._showedReminders.Contains(reminderTime))
                 {
                     continue;
                 }
@@ -106,7 +146,7 @@ namespace MyTools.Desktop.App
                 var timeSpanReminder = TimeSpan.Parse(reminderTime);
                 var timeSpanNow = DateTime.Now.TimeOfDay;
 
-                if (timeSpanReminder.Hours == timeSpanNow.Hours 
+                if (timeSpanReminder.Hours == timeSpanNow.Hours
                     && timeSpanReminder.Minutes == timeSpanNow.Minutes)
                 {
                     bool isReminderWindowOpened = WindowHelper.IsWindowOpened<ReminderWindow>();
@@ -141,6 +181,8 @@ namespace MyTools.Desktop.App
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.OnLoad();
+
+            this._updatesCheckTimer.Start();
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -198,6 +240,16 @@ namespace MyTools.Desktop.App
             var settingsWindow = new SettingsWindow();
 
             settingsWindow.Show();
+        }
+
+        private void WorkArea_MouseEnter(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void WorkArea_MouseLeave(object sender, MouseEventArgs e)
+        {
+
         }
     }
 }

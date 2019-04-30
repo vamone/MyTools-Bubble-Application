@@ -19,9 +19,11 @@ namespace MyTools.Desktop.App
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            double opacity = OpacityHelper.GetBackgroundOpacity();
+            double opacity = SliderHelper.GetBackgroundOpacity();
+            double innerMargin = SliderHelper.GetInnerMargin();
 
             this.OpacitySlider.Value = opacity;
+            this.InnerMargin.Value = innerMargin;
 
             string text = FileHelper.GetAllText();
 
@@ -32,15 +34,11 @@ namespace MyTools.Desktop.App
         {
             FileHelper.WriteAllText(this.ClipBoardsEditor.Text);
 
-            double opacity = this.OpacitySlider.Value;
-
-            OpacityHelper.SaveBackgroundOpacity(opacity);
+            SliderHelper.SaveBackgroundOpacity(this.OpacitySlider.Value);
+            SliderHelper.SaveInnerMargin(this.InnerMargin.Value);
 
             var window = WindowHelper.GetWindowByClassName<MainWindow>();
-
             window.OnLoad();
-
-            this.Close();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -51,6 +49,29 @@ namespace MyTools.Desktop.App
             string reminderMessage = "17:30 - It works in here.";
 
             window.SetReminderText(reminderMessage);
+        }
+
+        private void OpenAccountWindowButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool isWindowOpened = WindowHelper.IsWindowOpened<AccountWindow>();
+            if(!isWindowOpened)
+            {
+                var window = new AccountWindow();
+                window.Show();
+            }
+        }
+
+        private void SaveAndCloseSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            FileHelper.WriteAllText(this.ClipBoardsEditor.Text);
+
+            SliderHelper.SaveBackgroundOpacity(this.OpacitySlider.Value);
+            SliderHelper.SaveInnerMargin(this.InnerMargin.Value);
+
+            var window = WindowHelper.GetWindowByClassName<MainWindow>();
+            window.OnLoad();
+
+            this.Close();
         }
     }
 }
