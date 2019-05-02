@@ -59,5 +59,14 @@ namespace MyTools.Desktop.App.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://monych.se/bubbles/mytools/update/.
+        /// </summary>
+        internal static string UpdateCheckUrl {
+            get {
+                return ResourceManager.GetString("UpdateCheckUrl", resourceCulture);
+            }
+        }
     }
 }

@@ -8,57 +8,63 @@ namespace MyTools.Desktop.App.Helpers
 {
     public static class WorkAreaFactory
     {
-        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double innerMargin = 0)
+        private const int _defaultFactoryWidth = 200;
+
+        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double clipboardLeftMargin = 0)
         {
             var grid = new Grid
             {
                 Cursor = Cursors.Hand,
-                Width = 200,
+                Width = _defaultFactoryWidth,
                 Margin = new Thickness(0)
             };
 
-            var stackPanelHorisontal = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Width = 190
-            };
-
-            var button = ElementHelper.ButtonWithIcon(ImagesContants.CopyIcon);
-            button.BorderThickness = new Thickness(0);
-            button.Name = "Copy";
-            button.Click += new RoutedEventHandler(copyClick);
+            //var stackPanelHorisontal = new StackPanel
+            //{
+            //    Orientation = Orientation.Horizontal,
+            //    Width = 190
+            //};
 
             var textBlockMessage = new TextBlock
             {
                 Text = text,
                 Name = $"textInput",
                 FontStyle = FontStyles.Normal,
-                Margin = new Thickness { Left = 10 },
+                Margin = new Thickness { Left = 5, Top = 0, Right = 0, Bottom = 0 },
                 Foreground = new SolidColorBrush(Colors.Gray),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
-                TextWrapping = TextWrapping.Wrap,
+                TextWrapping = TextWrapping.NoWrap,
                 FontSize = 15,
             };
 
-            stackPanelHorisontal.Children.Add(button);
-            stackPanelHorisontal.Children.Add(textBlockMessage);
+            var button = new Button();//ElementHelper.ButtonWithIcon(ImagesContants.CopyIcon);
+            button.Background = new SolidColorBrush(Colors.Black);
+            button.BorderThickness = new Thickness(0);
+            button.Name = "Copy";
+            button.Content = textBlockMessage;
+            button.Click += new RoutedEventHandler(copyClick);
+            button.Margin = new Thickness { Right = _defaultFactoryWidth - clipboardLeftMargin };
+            button.Opacity = backgroundOpacity;
+          
+            //stackPanelHorisontal.Children.Add(button);
+            //stackPanelHorisontal.Children.Add(textBlockMessage);
 
-            grid.Children.Add(stackPanelHorisontal);
+            grid.Children.Add(button);
 
             var border = new Border
             {
                 Background = new SolidColorBrush(Colors.Black),
                 Opacity = backgroundOpacity,
-                CornerRadius = new CornerRadius(5),
+                //CornerRadius = new CornerRadius(5),
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
                 Uid = "",
                 Child = grid,
             };
 
-            if (innerMargin > 0)
+            if (clipboardLeftMargin > 0)
             {
-                border.Margin = new Thickness(innerMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+                border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
 
                 border.MouseEnter += (sender, eventArgs) =>
                 {
@@ -67,10 +73,10 @@ namespace MyTools.Desktop.App.Helpers
 
                 border.MouseLeave += (sender, eventArgs) =>
                 {
-                    border.Margin = new Thickness(innerMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+                    border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
                 };
 
-                border.CornerRadius = new CornerRadius { TopLeft = 5, BottomLeft = 5 };
+                //border.CornerRadius = new CornerRadius { TopLeft = 5, BottomLeft = 5 };
             }
 
             return border;

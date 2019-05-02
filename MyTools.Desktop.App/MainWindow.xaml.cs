@@ -1,12 +1,17 @@
 ﻿using MyTools.Desktop.App.Helpers;
+using MyTools.Desktop.App.Models;
+using MyTools.Desktop.App.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace MyTools.Desktop.App
@@ -25,6 +30,8 @@ namespace MyTools.Desktop.App
 
         private DateTime NextCheckUpdatesAt;
 
+        private Settings _settings;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -33,7 +40,6 @@ namespace MyTools.Desktop.App
             this._showedReminders = new List<string>();
 
             this.GridMain.MouseDown += OnMouseDown;
-            this.GridMain.MouseLeave += OnMouseLeave;
 
             this.AreaTimer = new DispatcherTimer();
             this.AreaTimer.Tick += ClearAreaTimerEventProcessor;
@@ -91,17 +97,13 @@ namespace MyTools.Desktop.App
                 this._reminderTimer.Start();
             }
 
-            double opacity = SliderHelper.GetBackgroundOpacity();
-            double innerMargin = SliderHelper.GetInnerMargin();
-
-            var clipboards = FileHelper.GetLines();
-
-            this._clipboards = clipboards;
+            this._settings = SettingsUtility.Get();
+            this._clipboards = DataUtility.Get();
 
             int i = 0;
-            foreach (var item in this._clipboards.Where(x => !x.StartsWith("!")).ToList())
+            foreach (var item in this._clipboards.Where(x => !x.StartsWith("!") && !x.StartsWith("#") && !string.IsNullOrWhiteSpace(x)).ToList())
             {
-                var border = WorkAreaFactory.Build(item, opacity, this.CopyClick, innerMargin: innerMargin);
+                var border = WorkAreaFactory.Build(item, this._settings.WindowOpacity, this.CopyClick, clipboardLeftMargin: this._settings.ClipboardLeftMargin);
                 this.WorkArea.Children.Add(border);
 
                 i++;
@@ -128,8 +130,6 @@ namespace MyTools.Desktop.App
         private void ReminderTimerEventProcessor(object sender, EventArgs e)
         {
             string regexReminderPattern = "^!([0-9]{1,2}:[0-9]{2});(.*)$"; //TODO: BETTER REGEX
-
-            double opacity = SliderHelper.GetBackgroundOpacity();
 
             var reminders = this._clipboards.Where(x => x.StartsWith("!")).ToList();
             foreach (var item in reminders)
@@ -169,13 +169,33 @@ namespace MyTools.Desktop.App
         {
             var button = sender as Button;
 
-            var stackPanel = button.Parent as StackPanel;
+            //var stackPanel = button.Parent as StackPanel;
 
-            var items = stackPanel.Children[1] as TextBlock;
+            var grid = button.Parent as Grid;
+            var border = grid.Parent as Border;
+            border.Background = new SolidColorBrush(Colors.Green);
 
-            Clipboard.SetText(items.Text);
+            var textBlock = button.Content as TextBlock;
+            Clipboard.SetText(textBlock.Text);
 
-            this.ActionNotificationText.Content = "COPIED";
+            var thread = new Thread(() =>
+            {       
+                Thread.Sleep(3000);
+                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<Border>(this.ChangeColor), border);
+            });
+
+            thread.Start();
+
+            //var textBlock = button.Content as TextBlock;
+        
+            //Clipboard.SetText(textBlock.Text);
+
+           //this.ActionNotificationText.Content = textBlock.Text;
+        }
+
+        private void ChangeColor(Border border)
+        {
+            border.Background = new SolidColorBrush(Colors.Black);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -216,10 +236,6 @@ namespace MyTools.Desktop.App
             }
         }
 
-        private void OnMouseLeave(object sender, MouseEventArgs e)
-        {
-        }
-
         private void ButtonMinimizedWindow_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
@@ -244,12 +260,10 @@ namespace MyTools.Desktop.App
 
         private void WorkArea_MouseEnter(object sender, MouseEventArgs e)
         {
-
         }
 
         private void WorkArea_MouseLeave(object sender, MouseEventArgs e)
         {
-
         }
     }
 }

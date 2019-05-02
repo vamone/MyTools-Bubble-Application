@@ -9,28 +9,16 @@
         WindowStyle="None" 
         ResizeMode="NoResize" 
         Topmost="False"
-        Title="MainWindow" Height="500" Width="200" Loaded="Window_Loaded">
+        Title="MainWindow" Height="600" Width="200" Loaded="Window_Loaded">
 
     <Window.Background>
         <SolidColorBrush Opacity="0" Color="White"/>
     </Window.Background>
 
-    <!--<Window.Resources>
-        <Style TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="Black" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="Red" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>-->
-
     <Grid x:Name="GridMain" Margin="0">
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
             <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="30,0,0,0" MouseEnter="WorkArea_MouseEnter" MouseLeave="WorkArea_MouseLeave"/>
             <Label x:Name="ActionNotificationText" VerticalAlignment="Bottom" HorizontalAlignment="Right"  />
-            <!--<Button x:Name="SettingButton" Click="SettingButton_Click">Settings</Button>-->
         </StackPanel>
         
     </Grid>
