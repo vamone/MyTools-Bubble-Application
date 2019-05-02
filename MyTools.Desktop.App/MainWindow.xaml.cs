@@ -98,12 +98,18 @@ namespace MyTools.Desktop.App
             }
 
             this._settings = SettingsUtility.Get();
+
+            this.Top = this._settings.PositionTop;
+            this.Left = this._settings.PositionLeft;
+
             this._clipboards = DataUtility.Get();
+
+            Func<object> funcFindResource = () => FindResource("defaultButtonTempalate");
 
             int i = 0;
             foreach (var item in this._clipboards.Where(x => !x.StartsWith("!") && !x.StartsWith("#") && !string.IsNullOrWhiteSpace(x)).ToList())
             {
-                var border = WorkAreaFactory.Build(item, this._settings.WindowOpacity, this.CopyClick, clipboardLeftMargin: this._settings.ClipboardLeftMargin);
+                var border = WorkAreaFactory.Build(item, this._settings.WindowOpacity, this.CopyClick, clipboardLeftMargin: this._settings.ClipboardLeftMargin, funcFindResource: funcFindResource);
                 this.WorkArea.Children.Add(border);
 
                 i++;
@@ -112,7 +118,7 @@ namespace MyTools.Desktop.App
 
         private void ClearAreaTimerEventProcessor(object sender, EventArgs e)
         {
-            this.ActionNotificationText.Content = string.Empty;
+            //this.ActionNotificationText.Content = string.Empty;
 
             bool isActive = this.WindowState == WindowState.Normal;
             if (isActive)
@@ -169,19 +175,20 @@ namespace MyTools.Desktop.App
         {
             var button = sender as Button;
 
-            //var stackPanel = button.Parent as StackPanel;
-
-            var grid = button.Parent as Grid;
-            var border = grid.Parent as Border;
-            border.Background = new SolidColorBrush(Colors.Green);
+            var border = button.Parent as Border;
+            border.Background = Brushes.Green;
 
             var textBlock = button.Content as TextBlock;
+            textBlock.Foreground = Brushes.Black;
+
             Clipboard.SetText(textBlock.Text);
 
             var thread = new Thread(() =>
             {       
                 Thread.Sleep(3000);
-                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<Border>(this.ChangeColor), border);
+
+                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<TextBlock>(this.ChangeTextColour), textBlock);
+                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<Border>(this.ChangeBorderColor), border);
             });
 
             thread.Start();
@@ -193,9 +200,14 @@ namespace MyTools.Desktop.App
            //this.ActionNotificationText.Content = textBlock.Text;
         }
 
-        private void ChangeColor(Border border)
+        private void ChangeBorderColor(Border border)
         {
             border.Background = new SolidColorBrush(Colors.Black);
+        }
+
+        private void ChangeTextColour(TextBlock textBlock)
+        {
+            textBlock.Foreground =  this._settings.WindowOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

@@ -10,73 +10,63 @@ namespace MyTools.Desktop.App.Helpers
     {
         private const int _defaultFactoryWidth = 200;
 
-        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double clipboardLeftMargin = 0)
+        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double clipboardLeftMargin = 0, Func<object> funcFindResource = null)
         {
-            var grid = new Grid
-            {
-                Cursor = Cursors.Hand,
-                Width = _defaultFactoryWidth,
-                Margin = new Thickness(0)
-            };
-
-            //var stackPanelHorisontal = new StackPanel
-            //{
-            //    Orientation = Orientation.Horizontal,
-            //    Width = 190
-            //};
+            var color = backgroundOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
 
             var textBlockMessage = new TextBlock
             {
                 Text = text,
-                Name = $"textInput",
+                Name = $"clipboardText",
                 FontStyle = FontStyles.Normal,
-                Margin = new Thickness { Left = 5, Top = 0, Right = 0, Bottom = 0 },
-                Foreground = new SolidColorBrush(Colors.Gray),
+                Margin = new Thickness { Left = 5 },
+                Foreground = color,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.NoWrap,
                 FontSize = 15,
             };
 
-            var button = new Button();//ElementHelper.ButtonWithIcon(ImagesContants.CopyIcon);
-            button.Background = new SolidColorBrush(Colors.Black);
-            button.BorderThickness = new Thickness(0);
-            button.Name = "Copy";
-            button.Content = textBlockMessage;
-            button.Click += new RoutedEventHandler(copyClick);
-            button.Margin = new Thickness { Right = _defaultFactoryWidth - clipboardLeftMargin };
-            button.Opacity = backgroundOpacity;
-          
-            //stackPanelHorisontal.Children.Add(button);
-            //stackPanelHorisontal.Children.Add(textBlockMessage);
+            var button = new Button
+            {
+                Background = Brushes.Transparent,
+                //Opacity = backgroundOpacity,
+                BorderThickness = new Thickness(0),
+                Name = $"copyButton",
+                Content = textBlockMessage,
+                Margin = new Thickness { Left = 10, Right = 20 },
+                Cursor = Cursors.Hand,
+                Style = (Style)funcFindResource.Invoke()
+            };
 
-            grid.Children.Add(button);
+            button.Click += new RoutedEventHandler(copyClick);
 
             var border = new Border
             {
-                Background = new SolidColorBrush(Colors.Black),
+                Background = Brushes.Black,
                 Opacity = backgroundOpacity,
-                //CornerRadius = new CornerRadius(5),
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
-                Uid = "",
-                Child = grid,
+                BorderThickness = new Thickness(0),
+                Uid = Guid.NewGuid().ToString(),
+                Child = button,
+                CornerRadius = new CornerRadius(2)
             };
 
             if (clipboardLeftMargin > 0)
             {
                 border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
 
-                border.MouseEnter += (sender, eventArgs) =>
+                border.MouseEnter += (s, e) =>
                 {
+                    button.Margin = new Thickness(button.Margin.Left, button.Margin.Top, button.Margin.Right - 10, button.Margin.Bottom);
                     border.Margin = new Thickness(0, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
                 };
 
-                border.MouseLeave += (sender, eventArgs) =>
+                border.MouseLeave += (s, e) =>
                 {
+                    button.Margin = new Thickness(button.Margin.Left, button.Margin.Top, button.Margin.Right + 10, button.Margin.Bottom);
                     border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
                 };
-
-                //border.CornerRadius = new CornerRadius { TopLeft = 5, BottomLeft = 5 };
             }
 
             return border;

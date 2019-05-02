@@ -19,7 +19,7 @@
         <Label Content="My Clipboards" HorizontalAlignment="Left" Margin="0,64,0,0" VerticalAlignment="Top"/>
         <TextBlock x:Name="OpacityValueTextBlock" Text="{Binding ElementName=OpacitySlider,Path=Value, StringFormat=0.00}" HorizontalAlignment="Right" Margin="417,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top"></TextBlock>
 
-        <Slider x:Name="InnerMargin" Margin="0,72,27,0" VerticalAlignment="Top" Value="6" LargeChange="10" Maximum="150" TickFrequency="0.1" />
-        <TextBlock x:Name="InnerMarginValueTextBlock" Text="{Binding Value, ElementName=InnerMargin, StringFormat=0.0}" HorizontalAlignment="Right" Margin="0,69,4,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Slider x:Name="InnerMargin" Margin="0,72,27,0" VerticalAlignment="Top" Value="6" LargeChange="10" Maximum="180" TickFrequency="1" />
+        <TextBlock x:Name="InnerMarginValueTextBlock" Text="{Binding Value, ElementName=InnerMargin, StringFormat=0}" HorizontalAlignment="Right" Margin="0,69,4,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Window>

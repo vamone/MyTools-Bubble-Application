@@ -18,5 +18,9 @@
         public double WindowOpacity { get; set; }
 
         public double ClipboardLeftMargin { get; set; }
+
+        public double PositionTop { get; set; }
+
+        public double PositionLeft { get; set; }
     }
 }

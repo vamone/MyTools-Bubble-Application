@@ -43,10 +43,11 @@ namespace MyTools.Desktop.App
 
         private void SaveAndReloadInternal()
         {
-            SettingsUtility.Set(this.OpacitySlider.Value, this.InnerMargin.Value);
+            var window = WindowHelper.GetWindowByClassName<MainWindow>();
+
+            SettingsUtility.Set(this.OpacitySlider.Value, this.InnerMargin.Value, window.Top, window.Left);
             DataUtility.Set(this.ClipBoardsEditor);
 
-            var window = WindowHelper.GetWindowByClassName<MainWindow>();
             window.OnLoad();
         }
     }

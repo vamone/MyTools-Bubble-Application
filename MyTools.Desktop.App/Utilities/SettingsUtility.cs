@@ -32,19 +32,20 @@ namespace MyTools.Desktop.App.Utilities
             return settings;
         }
 
-        public static void Set(double windowOpacity, double clipboardLeftMargin)
+        public static void Set(double windowOpacity, double clipboardLeftMargin, double positionTop, double positionLeft)
         {
             if (windowOpacity < 0 || windowOpacity > 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(windowOpacity));
             }
 
-            if (clipboardLeftMargin < 0 || clipboardLeftMargin > 150)
+            var settings = new Settings(windowOpacity, clipboardLeftMargin)
             {
-                throw new ArgumentOutOfRangeException(nameof(clipboardLeftMargin));
-            }
+                PositionTop = positionTop,
+                PositionLeft = positionLeft
+            };
 
-            Set(new Settings(windowOpacity, clipboardLeftMargin));
+            Set(settings);
         }
 
         public static void Set(Settings settings)
