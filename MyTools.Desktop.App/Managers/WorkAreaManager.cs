@@ -1,18 +1,34 @@
-﻿using MyTools.Desktop.App.Utilities;
+﻿using MyTools.Desktop.App.Models;
+using MyTools.Desktop.App.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MyTools.Desktop.App.Helpers
+namespace MyTools.Desktop.App.Managers
 {
-    public static class WorkAreaFactory
+    public class WorkAreaManager
     {
-        private const int _defaultFactoryWidth = 200;
+        private readonly Func<string, object> _funcFindResource;
 
-        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double clipboardLeftMargin = 0, Func<string, object> funcFindResource = null)
+        private readonly Settings _settings;
+
+        public WorkAreaManager(Settings settings, Func<string, object> funcFindResource)
         {
+            this._settings = settings;
+            this._funcFindResource = funcFindResource;
+        }
+
+        public Border BuildClipboardElement(string text, Action<object, RoutedEventArgs> clickAction, bool isReminder = false)
+        {
+            double backgroundOpacity = this._settings.WindowOpacity;
+            double clipboardLeftMargin = this._settings.ClipboardLeftMargin;
+
             var color = backgroundOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
 
             var textBlockMessage = new TextBlock
@@ -37,10 +53,10 @@ namespace MyTools.Desktop.App.Helpers
                 Content = textBlockMessage,
                 Margin = new Thickness { Left = 10, Right = 20 },
                 Cursor = Cursors.Hand,
-                Style = (Style)funcFindResource.Invoke("defaultButtonTempalate")
+                Style = (Style)this._funcFindResource.Invoke("defaultButtonTempalate")
             };
 
-            button.Click += new RoutedEventHandler(copyClick);
+            button.Click += new RoutedEventHandler(clickAction);
             //button.MouseEnter += (s, e) => { ((e.Source as Button).Content as TextBlock).Foreground = Brushes.White; };
             //button.MouseLeave += (s, e) => { ((e.Source as Button).Content as TextBlock).Foreground = color; };
 

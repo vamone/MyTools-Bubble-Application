@@ -48,7 +48,7 @@ namespace MyTools.Desktop.App
             SettingsUtility.Set(this.OpacitySlider.Value, this.InnerMargin.Value, window.Top, window.Left);
             DataUtility.Set(this.ClipBoardsEditor);
 
-            window.OnLoad();
+            window.OnLoadClipboards();
         }
     }
 

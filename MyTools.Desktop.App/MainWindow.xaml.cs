@@ -1,11 +1,10 @@
 ﻿using MyTools.Desktop.App.Helpers;
+using MyTools.Desktop.App.Managers;
 using MyTools.Desktop.App.Models;
 using MyTools.Desktop.App.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
@@ -18,34 +17,31 @@ namespace MyTools.Desktop.App
 {
     public partial class MainWindow : Window
     {
-        private readonly DispatcherTimer AreaTimer;
+        private readonly DispatcherTimer _topMostResolveTimer;
 
         private readonly DispatcherTimer _reminderTimer;
 
         private readonly DispatcherTimer _updatesCheckTimer;
 
-        private readonly Func<string, object> _funcFindResource;
+        private readonly ICollection<IReminder> _showedReminders;
 
-        private ICollection<string> _clipboards;
+        private readonly WorkAreaManager _workAreaManager;
 
-        private ICollection<string> _showedReminders;
-
-        private DateTime NextCheckUpdatesAt;
+        private readonly ClipboardsManager _clipboardsManager;
 
         private Settings _settings;
+
+        private DateTime _nextCheckUpdatesAt;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            this._clipboards = new List<string>();
-            this._showedReminders = new List<string>();
-
             this.GridMain.MouseDown += OnMouseDown;
 
-            this.AreaTimer = new DispatcherTimer();
-            this.AreaTimer.Tick += ClearAreaTimerEventProcessor;
-            this.AreaTimer.Interval = new TimeSpan(0, 0, 1);
+            this._topMostResolveTimer = new DispatcherTimer();
+            this._topMostResolveTimer.Tick += TopMostResoveEventProcessor;
+            this._topMostResolveTimer.Interval = new TimeSpan(0, 0, 1);
 
             this._reminderTimer = new DispatcherTimer();
             this._reminderTimer.Tick += ReminderTimerEventProcessor;
@@ -54,15 +50,22 @@ namespace MyTools.Desktop.App
             this._updatesCheckTimer = new DispatcherTimer();
             this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
             this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
+            this._updatesCheckTimer.IsEnabled = false;
 
-            this.NextCheckUpdatesAt = DateTime.Now;
+            this._nextCheckUpdatesAt = DateTime.Now;
 
-            this._funcFindResource = (a) => FindResource(a);
+            //NEW SOLUTION
+            this._settings = SettingsUtility.Get();
+
+            this._showedReminders = new List<IReminder>();
+
+            this._workAreaManager = new WorkAreaManager(this._settings, (a) => FindResource(a));
+            this._clipboardsManager = new ClipboardsManager(this._showedReminders);
         }
 
         private void UpdatesCheckTimerEventProcessor(object sender, EventArgs e)
         {
-            if (this.NextCheckUpdatesAt >= DateTime.Now)
+            if (this._nextCheckUpdatesAt >= DateTime.Now)
             {
                 return;
             }
@@ -74,7 +77,7 @@ namespace MyTools.Desktop.App
                 if (updateAvailableResults == MessageBoxResult.Cancel || updateAvailableResults == MessageBoxResult.No ||
                       updateAvailableResults == MessageBoxResult.None)
                 {
-                    this.NextCheckUpdatesAt = DateTime.Now.AddHours(24);
+                    this._nextCheckUpdatesAt = DateTime.Now.AddHours(24);
                     return;
                 }
 
@@ -86,42 +89,20 @@ namespace MyTools.Desktop.App
             }
         }
 
-        public void OnLoad()
+        public void OnLoadClipboards()
         {
             this.WorkArea.Children.Clear();
             this._showedReminders.Clear();
 
-            if (!this.AreaTimer.IsEnabled)
+            foreach (var clipboard in this._clipboardsManager.GetClipboards())
             {
-                this.AreaTimer.Start();
-            }
-
-            if (!this._reminderTimer.IsEnabled)
-            {
-                this._reminderTimer.Start();
-            }
-
-            this._settings = SettingsUtility.Get();
-
-            this.Top = this._settings.PositionTop;
-            this.Left = this._settings.PositionLeft;
-
-            this._clipboards = DataUtility.Get();
-
-            int i = 0;
-            foreach (var item in this._clipboards.Where(x => !x.StartsWith("!") && !x.StartsWith("#") && !string.IsNullOrWhiteSpace(x)).ToList())
-            {
-                var border = WorkAreaFactory.Build(item, this._settings.WindowOpacity, this.CopyClick, clipboardLeftMargin: this._settings.ClipboardLeftMargin, funcFindResource: this._funcFindResource);
-                this.WorkArea.Children.Add(border);
-
-                i++;
+                var element = this._workAreaManager.BuildClipboardElement(clipboard, this.CopyClick);
+                this.WorkArea.Children.Add(element);
             }
         }
 
-        private void ClearAreaTimerEventProcessor(object sender, EventArgs e)
+        private void TopMostResoveEventProcessor(object sender, EventArgs e)
         {
-            //this.ActionNotificationText.Content = string.Empty;
-
             bool isActive = this.WindowState == WindowState.Normal;
             if (isActive)
             {
@@ -137,107 +118,84 @@ namespace MyTools.Desktop.App
 
         private void ReminderTimerEventProcessor(object sender, EventArgs e)
         {
-            string regexReminderPattern = "^!([0-9]{1,2}:[0-9]{2});(.*)$"; //TODO: BETTER REGEX
-
-            var reminders = this._clipboards.Where(x => x.StartsWith("!")).ToList();
-            foreach (var item in reminders)
+            foreach (var reminder in this._clipboardsManager.GetReminders())
             {
-                string reminderTime = RegexHelper.GetGroupValue(item, regexReminderPattern, 1);
-
-                if (this._showedReminders.Contains(reminderTime))
-                {
-                    continue;
-                }
-
-                string reminderText = RegexHelper.GetGroupValue(item, regexReminderPattern, 2);
-
-                var timeSpanReminder = TimeSpan.Parse(reminderTime);
                 var timeSpanNow = DateTime.Now.TimeOfDay;
 
-                if (timeSpanReminder.Hours == timeSpanNow.Hours
-                    && timeSpanReminder.Minutes == timeSpanNow.Minutes)
+                if (reminder.TimeSpan.Hours == timeSpanNow.Hours && reminder.TimeSpan.Minutes == timeSpanNow.Minutes)
                 {
-                    string reminderMessage = $"{reminderTime} - {reminderText}";
+                    var element = this._workAreaManager.BuildClipboardElement(reminder.Text, this.CopyClick, isReminder: true);
 
-                    var border = WorkAreaFactory.Build(reminderMessage, this._settings.WindowOpacity, this.CopyClick, isReminder: true, clipboardLeftMargin: this._settings.ClipboardLeftMargin, funcFindResource: this._funcFindResource);
-                    this.WorkArea.Children.Add(border);
+                    this.WorkArea.Children.Add(element);
 
-                    var thread = new Thread(() =>
-                    {
-                        Thread.Sleep(60000);
+                    this._showedReminders.Add(reminder);
 
-                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<Border>(this.Remove), border);
-                    });
-
-                    thread.Start();
-
-                    this._showedReminders.Add(reminderTime);
-
-                    //bool isReminderWindowOpened = WindowHelper.IsWindowOpened<ReminderWindow>();
-                    //if (!isReminderWindowOpened)
-                    //{
-                    //    var window = new ReminderWindow();
-                    //    window.Show();
-
-                    //    string reminderMessage = $"{reminderTime} - {reminderText}";
-
-                    //    window.SetReminderText(reminderMessage);
-
-                    //    this._showedReminders.Add(reminderTime);
-                    //}
+                    this.ModifyElementThread<Border>(element, 60000, (a) => this.WorkArea.Children.Remove(a)).Start();
                 }
             }
+        }
+
+        private Thread ModifyElementThread<E>(object element, int threadSleepInMimiseconds, Action<E> action, DispatcherPriority dispatcherPriority = DispatcherPriority.Normal)
+        {
+            return new Thread(() =>
+            {
+                if (threadSleepInMimiseconds > 0)
+                {
+                    Thread.Sleep(threadSleepInMimiseconds);
+                }
+
+                this.Dispatcher.Invoke(DispatcherPriority.Normal, action, element);
+            });
         }
 
         private void CopyClick(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-
             var border = button.Parent as Border;
-            border.Background = Brushes.Green;
-
             var textBlock = button.Content as TextBlock;
+
+            border.Background = Brushes.Green;
             textBlock.Foreground = Brushes.Black;
 
             Clipboard.SetText(textBlock.Text);
 
-            var thread = new Thread(() =>
-            {       
-                Thread.Sleep(3000);
-
-                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<TextBlock>(this.ChangeTextColour), textBlock);
-                this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<Border>(this.ChangeBorderColor), border);
-            });
-
-            thread.Start();
-
-            //var textBlock = button.Content as TextBlock;
-        
-            //Clipboard.SetText(textBlock.Text);
-
-           //this.ActionNotificationText.Content = textBlock.Text;
+            this.ModifyElementThread<TextBlock>(textBlock, 3000, (a) => this.ChangeClipboardTextColour(a, this._settings.WindowOpacity)).Start();
+            this.ModifyElementThread<Border>(border, 3000, (a) => this.ChangeClipboardBorderColor(a)).Start();
         }
 
-        private void Remove(Border border)
+        private void ChangeClipboardBorderColor(Border border)
         {
-            this.WorkArea.Children.Remove(border);
+            border.Background = Brushes.Black;
         }
 
-        private void ChangeBorderColor(Border border)
+        private void ChangeClipboardTextColour(TextBlock textBlock, double windowOpacity)
         {
-            border.Background = new SolidColorBrush(Colors.Black);
-        }
-
-        private void ChangeTextColour(TextBlock textBlock)
-        {
-            textBlock.Foreground =  this._settings.WindowOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
+            textBlock.Foreground = windowOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.OnLoad();
+            this._settings = SettingsUtility.Get();
 
-            this._updatesCheckTimer.Start();
+            this.Top = this._settings.PositionTop;
+            this.Left = this._settings.PositionLeft;
+
+            if (!this._topMostResolveTimer.IsEnabled)
+            {
+                this._topMostResolveTimer.Start();
+            }
+
+            if (!this._reminderTimer.IsEnabled)
+            {
+                this._reminderTimer.Start();
+            }
+
+            if (!this._updatesCheckTimer.IsEnabled)
+            {
+                this._updatesCheckTimer.Start();
+            }
+
+            this.OnLoadClipboards();
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -271,11 +229,6 @@ namespace MyTools.Desktop.App
             }
         }
 
-        private void ButtonMinimizedWindow_Click(object sender, RoutedEventArgs e)
-        {
-            this.WindowState = WindowState.Minimized;
-        }
-
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
             bool isSettingsWindowOpened = WindowHelper.IsWindowOpened<SettingsWindow>();
@@ -291,14 +244,6 @@ namespace MyTools.Desktop.App
             var settingsWindow = new SettingsWindow();
 
             settingsWindow.Show();
-        }
-
-        private void WorkArea_MouseEnter(object sender, MouseEventArgs e)
-        {
-        }
-
-        private void WorkArea_MouseLeave(object sender, MouseEventArgs e)
-        {
         }
     }
 }
