@@ -80,6 +80,7 @@
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UpdateAppMessageBoxWrapper.cs" />
+    <Compile Include="Utilities\BrushesUtility.cs" />
     <Compile Include="Utilities\DataUtility.cs" />
     <Compile Include="Utilities\RegistryUtility.cs" />
     <Compile Include="Utilities\SettingsUtility.cs" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyTools.Desktop.App.Utilities;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -40,13 +41,16 @@ namespace MyTools.Desktop.App.Helpers
             };
 
             button.Click += new RoutedEventHandler(copyClick);
+            //button.MouseEnter += (s, e) => { ((e.Source as Button).Content as TextBlock).Foreground = Brushes.White; };
+            //button.MouseLeave += (s, e) => { ((e.Source as Button).Content as TextBlock).Foreground = color; };
 
             var border = new Border
             {
                 Background = Brushes.Black,
                 Opacity = backgroundOpacity,
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
-                BorderThickness = new Thickness(0),
+                BorderThickness = new Thickness { Left = 2 },
+                BorderBrush = BrushesUtility.GetRandomBrush(),
                 Uid = Guid.NewGuid().ToString(),
                 Child = button,
                 CornerRadius = new CornerRadius(2)
