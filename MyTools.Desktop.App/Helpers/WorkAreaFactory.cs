@@ -11,7 +11,7 @@ namespace MyTools.Desktop.App.Helpers
     {
         private const int _defaultFactoryWidth = 200;
 
-        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double clipboardLeftMargin = 0, Func<object> funcFindResource = null)
+        public static Border Build(string text, double backgroundOpacity, Action<object, RoutedEventArgs> copyClick, bool isReminder = false, double clipboardLeftMargin = 0, Func<string, object> funcFindResource = null)
         {
             var color = backgroundOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
 
@@ -21,7 +21,7 @@ namespace MyTools.Desktop.App.Helpers
                 Name = $"clipboardText",
                 FontStyle = FontStyles.Normal,
                 Margin = new Thickness { Left = 5 },
-                Foreground = color,
+                Foreground = isReminder ? Brushes.Black : color,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.NoWrap,
@@ -37,7 +37,7 @@ namespace MyTools.Desktop.App.Helpers
                 Content = textBlockMessage,
                 Margin = new Thickness { Left = 10, Right = 20 },
                 Cursor = Cursors.Hand,
-                Style = (Style)funcFindResource.Invoke()
+                Style = (Style)funcFindResource.Invoke("defaultButtonTempalate")
             };
 
             button.Click += new RoutedEventHandler(copyClick);
@@ -46,17 +46,17 @@ namespace MyTools.Desktop.App.Helpers
 
             var border = new Border
             {
-                Background = Brushes.Black,
+                Background = isReminder ? Brushes.Red : Brushes.Black,
                 Opacity = backgroundOpacity,
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
                 BorderThickness = new Thickness { Left = 2 },
-                BorderBrush = BrushesUtility.GetRandomBrush(),
+                BorderBrush = isReminder ? Brushes.Red : BrushesUtility.GetRandomBrush(),
                 Uid = Guid.NewGuid().ToString(),
                 Child = button,
                 CornerRadius = new CornerRadius(2)
             };
 
-            if (clipboardLeftMargin > 0)
+            if (!isReminder && clipboardLeftMargin > 0)
             {
                 border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
 

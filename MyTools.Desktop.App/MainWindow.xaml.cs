@@ -24,6 +24,8 @@ namespace MyTools.Desktop.App
 
         private readonly DispatcherTimer _updatesCheckTimer;
 
+        private readonly Func<string, object> _funcFindResource;
+
         private ICollection<string> _clipboards;
 
         private ICollection<string> _showedReminders;
@@ -54,6 +56,8 @@ namespace MyTools.Desktop.App
             this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
 
             this.NextCheckUpdatesAt = DateTime.Now;
+
+            this._funcFindResource = (a) => FindResource(a);
         }
 
         private void UpdatesCheckTimerEventProcessor(object sender, EventArgs e)
@@ -104,12 +108,10 @@ namespace MyTools.Desktop.App
 
             this._clipboards = DataUtility.Get();
 
-            Func<object> funcFindResource = () => FindResource("defaultButtonTempalate");
-
             int i = 0;
             foreach (var item in this._clipboards.Where(x => !x.StartsWith("!") && !x.StartsWith("#") && !string.IsNullOrWhiteSpace(x)).ToList())
             {
-                var border = WorkAreaFactory.Build(item, this._settings.WindowOpacity, this.CopyClick, clipboardLeftMargin: this._settings.ClipboardLeftMargin, funcFindResource: funcFindResource);
+                var border = WorkAreaFactory.Build(item, this._settings.WindowOpacity, this.CopyClick, clipboardLeftMargin: this._settings.ClipboardLeftMargin, funcFindResource: this._funcFindResource);
                 this.WorkArea.Children.Add(border);
 
                 i++;
@@ -155,18 +157,34 @@ namespace MyTools.Desktop.App
                 if (timeSpanReminder.Hours == timeSpanNow.Hours
                     && timeSpanReminder.Minutes == timeSpanNow.Minutes)
                 {
-                    bool isReminderWindowOpened = WindowHelper.IsWindowOpened<ReminderWindow>();
-                    if (!isReminderWindowOpened)
+                    string reminderMessage = $"{reminderTime} - {reminderText}";
+
+                    var border = WorkAreaFactory.Build(reminderMessage, this._settings.WindowOpacity, this.CopyClick, isReminder: true, clipboardLeftMargin: this._settings.ClipboardLeftMargin, funcFindResource: this._funcFindResource);
+                    this.WorkArea.Children.Add(border);
+
+                    var thread = new Thread(() =>
                     {
-                        var window = new ReminderWindow();
-                        window.Show();
+                        Thread.Sleep(60000);
 
-                        string reminderMessage = $"{reminderTime} - {reminderText}";
+                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action<Border>(this.Remove), border);
+                    });
 
-                        window.SetReminderText(reminderMessage);
+                    thread.Start();
 
-                        this._showedReminders.Add(reminderTime);
-                    }
+                    this._showedReminders.Add(reminderTime);
+
+                    //bool isReminderWindowOpened = WindowHelper.IsWindowOpened<ReminderWindow>();
+                    //if (!isReminderWindowOpened)
+                    //{
+                    //    var window = new ReminderWindow();
+                    //    window.Show();
+
+                    //    string reminderMessage = $"{reminderTime} - {reminderText}";
+
+                    //    window.SetReminderText(reminderMessage);
+
+                    //    this._showedReminders.Add(reminderTime);
+                    //}
                 }
             }
         }
@@ -198,6 +216,11 @@ namespace MyTools.Desktop.App
             //Clipboard.SetText(textBlock.Text);
 
            //this.ActionNotificationText.Content = textBlock.Text;
+        }
+
+        private void Remove(Border border)
+        {
+            this.WorkArea.Children.Remove(border);
         }
 
         private void ChangeBorderColor(Border border)
