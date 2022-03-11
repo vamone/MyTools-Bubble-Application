@@ -37,7 +37,9 @@
 
     <Grid x:Name="GridMain" Margin="0">
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
-            <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,0"/>
+            <StackPanel x:Name="WorkArea" Orientation="Vertical" HorizontalAlignment="Right" Margin="0,0,0,100" VerticalAlignment="Center"/>
+            <TextBlock x:Name="textBlockFocusTimeLeft" TextWrapping="Wrap" Text="TextBlock" Background="#FFFBF9F9"/>
+            <Button x:Name="buttonStartFocusTime" Content="Button" Click="ButtonStartFocusTime_Click"/>
         </StackPanel>
     </Grid>
 </Window>

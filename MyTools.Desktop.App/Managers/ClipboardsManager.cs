@@ -55,7 +55,7 @@ namespace MyTools.Desktop.App.Managers
 
         internal bool FilterByShowedReminders(IReminder reminder)
         {
-            bool isAllreadyShowed = this._showedReminders.Any(x => x.TimeSpan.Equals(reminder.TimeSpan));
+            bool isAllreadyShowed = this._showedReminders.Where(x => x.CreatedAt < DateTime.UtcNow).Any(x => x.TimeSpan.Equals(reminder.TimeSpan));
 
             return !isAllreadyShowed;
         }

@@ -5,6 +5,7 @@ using MyTools.Desktop.App.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
@@ -17,21 +18,25 @@ namespace MyTools.Desktop.App
 {
     public partial class MainWindow : Window
     {
-        private readonly DispatcherTimer _topMostResolveTimer;
+        readonly DispatcherTimer _topMostResolveTimer;
 
-        private readonly DispatcherTimer _reminderTimer;
+        readonly DispatcherTimer _reminderTimer;
 
-        private readonly DispatcherTimer _updatesCheckTimer;
+        readonly DispatcherTimer _updatesCheckTimer;
 
-        private readonly ICollection<IReminder> _showedReminders;
+        readonly DispatcherTimer _focusTimer;
 
-        private readonly WorkAreaManager _workAreaManager;
+        readonly ICollection<IReminder> _showedReminders;
 
-        private readonly ClipboardsManager _clipboardsManager;
+        readonly WorkAreaManager _workAreaManager;
 
-        private Settings _settings;
+        readonly ClipboardsManager _clipboardsManager;
 
-        private DateTime _nextCheckUpdatesAt;
+        Settings _settings;
+
+        DateTime _nextCheckUpdatesAt;
+
+        DateTime _lastFocusAt;
 
         public MainWindow()
         {
@@ -51,6 +56,10 @@ namespace MyTools.Desktop.App
             this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
             this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
             this._updatesCheckTimer.IsEnabled = false;
+
+            this._focusTimer = new DispatcherTimer();
+            this._focusTimer.Tick += FocusEventProcessor;
+            this._focusTimer.Interval = new TimeSpan(0, 0, 1);
 
             this._nextCheckUpdatesAt = DateTime.Now;
 
@@ -89,14 +98,28 @@ namespace MyTools.Desktop.App
             }
         }
 
+        private void FocusEventProcessor(object sender, EventArgs e)
+        {
+            var span = this._lastFocusAt.Subtract(DateTime.UtcNow);
+            this.textBlockFocusTimeLeft.Text = span.TotalMinutes.ToString("0");
+
+            if (this._lastFocusAt < DateTime.UtcNow)
+            {
+                this._focusTimer.Stop();
+            }
+        }
+
         public void OnLoadClipboards()
         {
             this.WorkArea.Children.Clear();
             this._showedReminders.Clear();
 
+            var popupElement = this._workAreaManager.BuildClipboardElement("Resp", this.OpenResposiveTable, Brushes.OrangeRed);
+            this.WorkArea.Children.Add(popupElement);
+
             foreach (var clipboard in this._clipboardsManager.GetClipboards())
             {
-                var element = this._workAreaManager.BuildClipboardElement(clipboard, this.CopyClick);
+                var element = this._workAreaManager.BuildClipboardElement(clipboard, this.CopyClick, Brushes.Black);
                 this.WorkArea.Children.Add(element);
             }
         }
@@ -124,9 +147,11 @@ namespace MyTools.Desktop.App
 
                 if (reminder.TimeSpan.Hours == timeSpanNow.Hours && reminder.TimeSpan.Minutes == timeSpanNow.Minutes)
                 {
-                    var element = this._workAreaManager.BuildClipboardElement(reminder.Text, this.CopyClick, isReminder: true);
+                    var element = this._workAreaManager.BuildClipboardElement(reminder.Text, this.CopyClick, Brushes.Black, isReminder: true);
 
                     this.WorkArea.Children.Add(element);
+
+                    reminder.CreatedAt = DateTime.UtcNow;
 
                     this._showedReminders.Add(reminder);
 
@@ -163,6 +188,10 @@ namespace MyTools.Desktop.App
             this.ModifyElementThread<Border>(border, 3000, (a) => this.ChangeClipboardBorderColor(a)).Start();
         }
 
+        private void OpenResposiveTable(object sender, RoutedEventArgs e)
+        {      
+        }
+
         private void ChangeClipboardBorderColor(Border border)
         {
             border.Background = Brushes.Black;
@@ -179,6 +208,7 @@ namespace MyTools.Desktop.App
 
             this.Top = this._settings.PositionTop;
             this.Left = this._settings.PositionLeft;
+            this.Height = SystemParameters.PrimaryScreenHeight;
 
             if (!this._topMostResolveTimer.IsEnabled)
             {
@@ -244,6 +274,12 @@ namespace MyTools.Desktop.App
             var settingsWindow = new SettingsWindow();
 
             settingsWindow.Show();
+        }
+
+        private void ButtonStartFocusTime_Click(object sender, RoutedEventArgs e)
+        {
+            this._lastFocusAt = DateTime.UtcNow.AddMinutes(2);
+            this._focusTimer.Start();
         }
     }
 }

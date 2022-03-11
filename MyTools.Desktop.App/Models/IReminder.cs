@@ -7,5 +7,7 @@ namespace MyTools.Desktop.App.Models
         string Text { get; set; }
 
         TimeSpan TimeSpan { get; set; }
+
+        DateTime CreatedAt { get; set; }
     }
 }

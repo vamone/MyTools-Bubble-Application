@@ -24,7 +24,12 @@ namespace MyTools.Desktop.App.Managers
             this._funcFindResource = funcFindResource;
         }
 
-        public Border BuildClipboardElement(string text, Action<object, RoutedEventArgs> clickAction, bool isReminder = false)
+        public Border PopupElement(string text, SolidColorBrush color, Action<object, RoutedEventArgs> clickAction)
+        {
+            return this.BuildClipboardElement("Resp", clickAction, Brushes.Black);
+        }
+
+        public Border BuildClipboardElement(string text, Action<object, RoutedEventArgs> clickAction, SolidColorBrush defaultColor, bool isReminder = false)
         {
             double backgroundOpacity = this._settings.WindowOpacity;
             double clipboardLeftMargin = this._settings.ClipboardLeftMargin;
@@ -62,7 +67,7 @@ namespace MyTools.Desktop.App.Managers
 
             var border = new Border
             {
-                Background = isReminder ? Brushes.Red : Brushes.Black,
+                Background = isReminder ? Brushes.Red : defaultColor,
                 Opacity = backgroundOpacity,
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
                 BorderThickness = new Thickness { Left = 2 },
