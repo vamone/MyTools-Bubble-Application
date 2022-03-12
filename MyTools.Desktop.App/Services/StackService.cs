@@ -28,12 +28,15 @@ namespace MyTools.Desktop.App.Services
 
         public IEnumerable<IStackElement> GetCopies()
         {
-            return DataUtility.Get().Where(x => !x.StartsWith("!") && !x.StartsWith("#") && !string.IsNullOrWhiteSpace(x)).Select(x => new StackElement(x, _copyConfig)).ToList();
+            return DataUtility.Get()
+                .Where(x => !x.StartsWith("!") 
+                && !x.StartsWith("#") 
+                && !string.IsNullOrWhiteSpace(x)).Select(x => new StackElement(x, this._copyConfig)).ToList();
         }
 
         public IEnumerable<IStackElement> GetFocus()
         {
-            throw new NotImplementedException();
+            yield return new StackElement("Focus time!", this._focusCopyConfig);
         }
 
         public IEnumerable<IStackElement> GetReminders()
@@ -69,6 +72,8 @@ namespace MyTools.Desktop.App.Services
         internal bool FilterByShowedReminders(IReminder reminder)
         {
             //Not sure if that works??
+
+            return false;
 
             bool isAllreadyShowed = _showedReminders.Where(x => x.CreatedAt < DateTime.UtcNow).Any(x => x.TimeSpan.Equals(reminder.TimeSpan));
             return !isAllreadyShowed;

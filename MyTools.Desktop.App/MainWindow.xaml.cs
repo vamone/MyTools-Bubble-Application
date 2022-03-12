@@ -128,11 +128,10 @@ namespace MyTools.Desktop.App
 
         private void FocusEventProcessor(object sender, EventArgs e)
         {
-
             var stackElements = this._stackService.GetFocus();
             foreach (var stack in stackElements)
             {
-                if(stack.IsLastThen(DateTime.UtcNow))
+                if(stack.LastFocusAt < DateTime.UtcNow)
                 {
                     this._focusTimer.Stop();
 
@@ -141,10 +140,19 @@ namespace MyTools.Desktop.App
                     return;
                 }
 
+                //var focusTimeSpan = stack.LastFocusAt.Subtract(DateTime.UtcNow);
 
+                //bool isOpen = true;
+                //bool isOpenIn10Seconds = this._defaultFocusTimeInMinutes * 60 - focusTimeSpan.TotalSeconds <= 10;
+                //if (!isOpenIn10Seconds)
+                //{
+                //    isOpen = false;
+                //}
 
+                //string timelapsOutput = focusTimeSpan.Minutes < 1 ? focusTimeSpan.Seconds.ToString() : $"{focusTimeSpan.Minutes}:{focusTimeSpan.Seconds}";
 
-                this.WorkArea.Children.Add(stack.UIElement);
+                //this._focusElement = this._workAreaManager.BuildClipboardElement(timelapsOutput, this.ActionStartFocusTimer, Brushes.White, Brushes.Red, isOpen: isOpen);
+                //this.WorkArea.Children.Add(this._focusElement);
             }
 
             this.WorkArea.Children.Remove(this._focusElement);
