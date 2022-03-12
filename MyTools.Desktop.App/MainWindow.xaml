@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MyTools.Desktop.App"
+        xmlns:ed="http://schemas.microsoft.com/expression/2010/drawing"
         mc:Ignorable="d"
         AllowsTransparency="True" 
         WindowStyle="None" 
@@ -35,11 +36,9 @@
         </Style>
     </Window.Resources>
 
-    <Grid x:Name="GridMain" Margin="0">
+    <Grid x:Name="GridMain" Margin="0,0,0,100">
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
-            <StackPanel x:Name="WorkArea" Orientation="Vertical" HorizontalAlignment="Right" Margin="0,0,0,100" VerticalAlignment="Center"/>
-            <TextBlock x:Name="textBlockFocusTimeLeft" TextWrapping="Wrap" Text="TextBlock" Background="#FFFBF9F9"/>
-            <Button x:Name="buttonStartFocusTime" Content="Button" Click="ButtonStartFocusTime_Click"/>
+            <StackPanel x:Name="WorkArea" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -71,8 +71,14 @@
     <Compile Include="Helpers\RegexHelper.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Models\IReminder.cs" />
+    <Compile Include="Models\IStackConfig.cs" />
+    <Compile Include="Models\IStackElement.cs" />
+    <Compile Include="Services\IStackService.cs" />
     <Compile Include="Models\Reminder.cs" />
     <Compile Include="Models\Settings.cs" />
+    <Compile Include="Models\StackConfig.cs" />
+    <Compile Include="Models\StackElement.cs" />
+    <Compile Include="Services\StackService.cs" />
     <Compile Include="ReminderWindow.xaml.cs">
       <DependentUpon>ReminderWindow.xaml</DependentUpon>
     </Compile>
@@ -82,6 +88,7 @@
     <Compile Include="UpdateAppMessageBoxWrapper.cs" />
     <Compile Include="Utilities\BrushesUtility.cs" />
     <Compile Include="Utilities\DataUtility.cs" />
+    <Compile Include="Utilities\ElementUtility.cs" />
     <Compile Include="Utilities\RegistryUtility.cs" />
     <Compile Include="Utilities\SettingsUtility.cs" />
     <Compile Include="Managers\WorkAreaManager.cs" />

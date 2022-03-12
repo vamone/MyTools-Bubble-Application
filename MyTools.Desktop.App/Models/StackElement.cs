@@ -1,47 +1,43 @@
-﻿using MyTools.Desktop.App.Models;
+﻿using MyTools.Desktop.App.Services;
 using MyTools.Desktop.App.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 
-namespace MyTools.Desktop.App.Managers
+namespace MyTools.Desktop.App.Models
 {
-    public class WorkAreaManager
+    public class StackElement : IStackElement
     {
-        readonly Func<string, object> _funcFindResource;
+        readonly string _textValue;
 
-        readonly Settings _settings;
-
-        public WorkAreaManager(Settings settings, Func<string, object> funcFindResource)
+        public StackElement(string textValue, IStackConfig config)
         {
-            this._settings = settings;
-            this._funcFindResource = funcFindResource;
+            this._textValue = textValue;
+            this.UIElement = this.Build(config);
         }
 
-        public Border BuildClipboardElement(string text, Action<object, RoutedEventArgs> clickAction, SolidColorBrush foregroundColor, SolidColorBrush backgrounddColor, bool isOpen = false)
-        {
-            double backgroundOpacity = this._settings.WindowOpacity;
-            double clipboardLeftMargin = this._settings.ClipboardLeftMargin;
+        public UIElement UIElement { get; }
 
-            var color = backgroundOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
+        public DateTime LastFocusAt { get; set; }
+
+        public int FocusTimeInMinutes { get; set; }
+
+        UIElement Build(IStackConfig config)
+        {
+            var color = config.BackgroundOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
 
             var textBlockMessage = new TextBlock
             {
-                Text = text,
+                Text = this._textValue,
                 Name = $"clipboardText",
                 FontStyle = FontStyles.Normal,
                 Margin = new Thickness { Left = 5 },
-                Foreground = foregroundColor,
+                Foreground = config.ForegroundColor,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
-                TextWrapping = TextWrapping.NoWrap, 
+                TextWrapping = TextWrapping.NoWrap,
                 FontSize = 15,
             };
 
@@ -54,17 +50,20 @@ namespace MyTools.Desktop.App.Managers
                 Content = textBlockMessage,
                 Margin = new Thickness { Left = 10, Right = 20 },
                 Cursor = Cursors.Hand,
-                Style = (Style)this._funcFindResource.Invoke("defaultButtonTempalate"),
+                //Style = (Style)this._funcFindResource.Invoke("defaultButtonTempalate"),
             };
 
-            button.Click += new RoutedEventHandler(clickAction);
+            if (config.Action != null)
+            {
+                button.Click += new RoutedEventHandler(config.Action);
+            }
             //button.MouseEnter += (s, e) => { ((e.Source as Button).Content as TextBlock).Foreground = Brushes.White; };
             //button.MouseLeave += (s, e) => { ((e.Source as Button).Content as TextBlock).Foreground = color; };
 
             var border = new Border
             {
-                Background = backgrounddColor,
-                Opacity = backgroundOpacity,
+                Background = config.BackgroundColor,
+                Opacity = config.BackgroundOpacity,
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
                 BorderThickness = new Thickness { Left = 2 },
                 BorderBrush = BrushesUtility.GetRandomBrush(),
@@ -73,12 +72,12 @@ namespace MyTools.Desktop.App.Managers
                 CornerRadius = new CornerRadius(2)
             };
 
-            if(!isOpen)
+            if (!config.IsStackOpen)
             {
-                border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+                border.Margin = new Thickness(config.ClipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
             }
 
-            if (clipboardLeftMargin > 0)
+            if (config.ClipboardLeftMargin > 0)
             {
                 border.MouseEnter += (s, e) =>
                 {
@@ -89,7 +88,7 @@ namespace MyTools.Desktop.App.Managers
                 border.MouseLeave += (s, e) =>
                 {
                     //button.Margin = new Thickness(button.Margin.Left, button.Margin.Top, button.Margin.Right + 10, button.Margin.Bottom);
-                    border.Margin = new Thickness(clipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
+                    border.Margin = new Thickness(config.ClipboardLeftMargin, border.Margin.Top, border.Margin.Right, border.Margin.Bottom);
                 };
             }
 

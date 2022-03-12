@@ -1,6 +1,7 @@
 ﻿using MyTools.Desktop.App.Helpers;
 using MyTools.Desktop.App.Managers;
 using MyTools.Desktop.App.Models;
+using MyTools.Desktop.App.Services;
 using MyTools.Desktop.App.Utilities;
 using System;
 using System.Collections.Generic;
@@ -32,11 +33,17 @@ namespace MyTools.Desktop.App
 
         readonly ClipboardsManager _clipboardsManager;
 
+        readonly int _defaultFocusTimeInMinutes;
+
         Settings _settings;
 
         DateTime _nextCheckUpdatesAt;
 
         DateTime _lastFocusAt;
+
+        Border _focusElement;
+
+        readonly IStackService _stackService;
 
         public MainWindow()
         {
@@ -61,6 +68,27 @@ namespace MyTools.Desktop.App
             this._focusTimer.Tick += FocusEventProcessor;
             this._focusTimer.Interval = new TimeSpan(0, 0, 1);
 
+            var copyConfig = new StackConfig
+            {
+                ForegroundColor = Brushes.Gray,
+                BackgroundColor = Brushes.Black
+            };
+
+            var focusConfig = new StackConfig
+            {
+                ForegroundColor = Brushes.White,
+                BackgroundColor = Brushes.Red
+            };
+
+            var reminderConfig = new StackConfig
+            {
+                ForegroundColor = Brushes.White,
+                BackgroundColor = Brushes.Red
+            };
+
+            this._stackService = new StackService(copyConfig, focusConfig, reminderConfig);
+            
+            this._defaultFocusTimeInMinutes = 25;
             this._nextCheckUpdatesAt = DateTime.Now;
 
             //NEW SOLUTION
@@ -100,13 +128,50 @@ namespace MyTools.Desktop.App
 
         private void FocusEventProcessor(object sender, EventArgs e)
         {
-            var span = this._lastFocusAt.Subtract(DateTime.UtcNow);
-            this.textBlockFocusTimeLeft.Text = span.TotalMinutes.ToString("0");
+
+            var stackElements = this._stackService.GetFocus();
+            foreach (var stack in stackElements)
+            {
+                if(stack.IsLastThen(DateTime.UtcNow))
+                {
+                    this._focusTimer.Stop();
+
+                    this.WorkArea.Children.Add(stack.UIElement);
+                    this.ModifyElementThread<Border>(stack.UIElement, 60000, (a) => this.WorkArea.Children.Remove(a)).Start();
+                    return;
+                }
+
+
+
+
+                this.WorkArea.Children.Add(stack.UIElement);
+            }
+
+            this.WorkArea.Children.Remove(this._focusElement);
 
             if (this._lastFocusAt < DateTime.UtcNow)
             {
                 this._focusTimer.Stop();
+
+                var element = this._workAreaManager.BuildClipboardElement("Focus time is over!", this.ActionStartFocusTimer, Brushes.White, Brushes.Red, isOpen: true);
+                this.WorkArea.Children.Add(element);
+                this.ModifyElementThread<Border>(element, 60000, (a) => this.WorkArea.Children.Remove(a)).Start();
+                return;
             }
+
+            var focusTimeSpan = this._lastFocusAt.Subtract(DateTime.UtcNow);
+
+            bool isOpen = true;
+            bool isOpenIn10Seconds = this._defaultFocusTimeInMinutes * 60 - focusTimeSpan.TotalSeconds <= 10;
+            if (!isOpenIn10Seconds)
+            {
+                isOpen = false;
+            }
+
+            string timelapsOutput = focusTimeSpan.Minutes < 1 ? focusTimeSpan.Seconds.ToString() : $"{focusTimeSpan.Minutes}:{focusTimeSpan.Seconds}";
+
+            this._focusElement = this._workAreaManager.BuildClipboardElement(timelapsOutput, this.ActionStartFocusTimer, Brushes.White, Brushes.Red, isOpen: isOpen);
+            this.WorkArea.Children.Add(this._focusElement);
         }
 
         public void OnLoadClipboards()
@@ -114,14 +179,22 @@ namespace MyTools.Desktop.App
             this.WorkArea.Children.Clear();
             this._showedReminders.Clear();
 
-            var popupElement = this._workAreaManager.BuildClipboardElement("Resp", this.OpenResposiveTable, Brushes.OrangeRed);
-            this.WorkArea.Children.Add(popupElement);
+            //var popupElement = this._workAreaManager.BuildClipboardElement("Resp", this.OpenResposiveTable, Brushes.OrangeRed);
+            //this.WorkArea.Children.Add(popupElement);
 
-            foreach (var clipboard in this._clipboardsManager.GetClipboards())
+            var stackElements = this._stackService.GetCopies();
+            foreach (var stack in stackElements)
             {
-                var element = this._workAreaManager.BuildClipboardElement(clipboard, this.CopyClick, Brushes.Black);
-                this.WorkArea.Children.Add(element);
+                this.WorkArea.Children.Add(stack.UIElement);
             }
+
+
+            //var clipboards = this._clipboardsManager.GetClipboards();
+            //foreach (var clipboard in clipboards)
+            //{
+            //    var element = this._workAreaManager.BuildClipboardElement(clipboard, this.CopyClick, Brushes.Gray, Brushes.Black);
+            //    this.WorkArea.Children.Add(element);
+            //}
         }
 
         private void TopMostResoveEventProcessor(object sender, EventArgs e)
@@ -141,22 +214,23 @@ namespace MyTools.Desktop.App
 
         private void ReminderTimerEventProcessor(object sender, EventArgs e)
         {
-            foreach (var reminder in this._clipboardsManager.GetReminders())
+            var reminders = this._stackService.GetReminders();
+            foreach (var reminder in reminders)
             {
-                var timeSpanNow = DateTime.Now.TimeOfDay;
+                //var timeSpanNow = DateTime.UtcNow.TimeOfDay;
 
-                if (reminder.TimeSpan.Hours == timeSpanNow.Hours && reminder.TimeSpan.Minutes == timeSpanNow.Minutes)
-                {
-                    var element = this._workAreaManager.BuildClipboardElement(reminder.Text, this.CopyClick, Brushes.Black, isReminder: true);
+                //if (reminder.TimeSpan.Hours == timeSpanNow.Hours && reminder.TimeSpan.Minutes == timeSpanNow.Minutes)
+                //{
+                //    var element = this._workAreaManager.BuildClipboardElement(reminder, this.CopyClick, Brushes.White, Brushes.Red);
 
-                    this.WorkArea.Children.Add(element);
+                //    this.WorkArea.Children.Add(element);
 
-                    reminder.CreatedAt = DateTime.UtcNow;
+                //    reminder.CreatedAt = DateTime.UtcNow;
 
-                    this._showedReminders.Add(reminder);
+                //    this._showedReminders.Add(reminder);
 
-                    this.ModifyElementThread<Border>(element, 60000, (a) => this.WorkArea.Children.Remove(a)).Start();
-                }
+                //    this.ModifyElementThread<Border>(element, 60000, (a) => this.WorkArea.Children.Remove(a)).Start();
+                //}
             }
         }
 
@@ -189,7 +263,19 @@ namespace MyTools.Desktop.App
         }
 
         private void OpenResposiveTable(object sender, RoutedEventArgs e)
-        {      
+        {
+        }
+
+        private void ActionStartFocusTimer(object sender, RoutedEventArgs e)
+        {
+            if(this._focusTimer.IsEnabled)
+            {
+                this._focusTimer.Stop();
+                return;
+            }
+
+            this._lastFocusAt = DateTime.UtcNow.AddMinutes(this._defaultFocusTimeInMinutes);
+            this._focusTimer.Start();
         }
 
         private void ChangeClipboardBorderColor(Border border)
@@ -226,6 +312,9 @@ namespace MyTools.Desktop.App
             }
 
             this.OnLoadClipboards();
+
+            this._focusElement = this._workAreaManager.BuildClipboardElement("Start focus!", this.ActionStartFocusTimer, Brushes.White, Brushes.Red, isOpen: true);
+            this.WorkArea.Children.Add(this._focusElement);
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -274,12 +363,6 @@ namespace MyTools.Desktop.App
             var settingsWindow = new SettingsWindow();
 
             settingsWindow.Show();
-        }
-
-        private void ButtonStartFocusTime_Click(object sender, RoutedEventArgs e)
-        {
-            this._lastFocusAt = DateTime.UtcNow.AddMinutes(2);
-            this._focusTimer.Start();
         }
     }
 }
