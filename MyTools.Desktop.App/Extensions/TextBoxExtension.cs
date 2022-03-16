@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace MyTools.Desktop.App
 {
-    public static class TextBoxExtention
+    public static class TextBoxExtension
     {
         public static ICollection<string> AsLines(this TextBox source)
         {

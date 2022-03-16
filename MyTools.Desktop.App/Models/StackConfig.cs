@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MyTools.Desktop.App.Services;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
 namespace MyTools.Desktop.App.Models
 {
-    public class StackConfig : IStackConfig
+    public class StackConfig<T> : IStackConfig<T> where T : IStackElement
     {
         public StackConfig()
         {
@@ -19,11 +20,12 @@ namespace MyTools.Desktop.App.Models
 
         public bool IsStackOpen { get; set; }
 
-        public Action<object, RoutedEventArgs> Action { get; set; }
+        public Action<object, RoutedEventArgs> ClickAction { get; set; }
 
         public double BackgroundOpacity { get; set; }
 
-        public Brush BorderBrush { get; set; }
+        public Func<Brush> BorderBrush { get; set; }
 
+        public Func<string, object> FuncFindResource { get; set; }
     }
 }

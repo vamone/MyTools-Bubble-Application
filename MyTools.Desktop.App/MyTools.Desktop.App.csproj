@@ -64,17 +64,20 @@
     <Compile Include="AccountWindow.xaml.cs">
       <DependentUpon>AccountWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Managers\ClipboardsManager.cs" />
-    <Compile Include="Extensions\TextBoxExtention.cs" />
+    <Compile Include="Extensions\TextBoxExtension.cs" />
     <Compile Include="Helpers\BrushHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\RegexHelper.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
-    <Compile Include="Models\IReminder.cs" />
+    <Compile Include="Models\CopyElement.cs" />
+    <Compile Include="Models\FocusElement.cs" />
+    <Compile Include="Models\ICopyElement.cs" />
+    <Compile Include="Models\IFocusElement.cs" />
+    <Compile Include="Models\IReminderElement.cs" />
     <Compile Include="Models\IStackConfig.cs" />
     <Compile Include="Models\IStackElement.cs" />
+    <Compile Include="Models\ReminderElement.cs" />
     <Compile Include="Services\IStackService.cs" />
-    <Compile Include="Models\Reminder.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Models\StackConfig.cs" />
     <Compile Include="Models\StackElement.cs" />
@@ -91,7 +94,6 @@
     <Compile Include="Utilities\ElementUtility.cs" />
     <Compile Include="Utilities\RegistryUtility.cs" />
     <Compile Include="Utilities\SettingsUtility.cs" />
-    <Compile Include="Managers\WorkAreaManager.cs" />
     <Page Include="AccountWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

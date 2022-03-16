@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MyTools.Desktop.App.Services;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
 namespace MyTools.Desktop.App.Models
 {
-    public interface IStackConfig
+    public interface IStackConfig<T>
     {
         double ClipboardLeftMargin { get; set; }
 
@@ -14,10 +15,12 @@ namespace MyTools.Desktop.App.Models
 
         bool IsStackOpen { get; set; }
 
-        Action<object, RoutedEventArgs> Action { get; set; }
+        Action<object, RoutedEventArgs> ClickAction { get; set; }
 
         double BackgroundOpacity { get; }
 
-        Brush BorderBrush { get; set; }
+        Func<Brush> BorderBrush { get; set; }
+
+        Func<string, object> FuncFindResource { get; set; }
     }
 }

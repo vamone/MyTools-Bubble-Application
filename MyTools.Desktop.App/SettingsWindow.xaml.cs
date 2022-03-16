@@ -49,6 +49,7 @@ namespace MyTools.Desktop.App
             DataUtility.Set(this.ClipBoardsEditor);
 
             window.OnLoadClipboards();
+            window.OnLoadFocus();
         }
     }
 

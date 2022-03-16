@@ -7,8 +7,8 @@ namespace MyTools.Desktop.App.Services
 {
     public interface IStackElement
     {
-        UIElement UIElement { get; }
+        UIElement BuildUIElement();
 
-        DateTime LastFocusAt { get; set; }
+        UIElement BuildUIElement(string textValue);
     }
 }

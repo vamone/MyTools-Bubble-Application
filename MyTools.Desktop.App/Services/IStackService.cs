@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using MyTools.Desktop.App.Models;
+using System.Collections.Generic;
 
 namespace MyTools.Desktop.App.Services
 {
     public interface IStackService
     {
-        IEnumerable<IStackElement> GetReminders();
+        IEnumerable<IReminderElement> GetReminders();
 
         IEnumerable<IStackElement> GetCopies();
 
-        IEnumerable<IStackElement> GetFocus();
+        IEnumerable<IFocusElement> GetFocus();
     }
 }
