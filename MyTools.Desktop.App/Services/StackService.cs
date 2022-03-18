@@ -15,14 +15,11 @@ namespace MyTools.Desktop.App.Services
 
         readonly IStackConfig<IReminderElement> _reminderConfig;
 
-        readonly ICollection<IReminderElement> _showedReminders;
-
         public StackService(IStackConfig<ICopyElement> copyConfig, IStackConfig<IFocusElement> focusConfig, IStackConfig<IReminderElement> reminderConfig)
         {
             this._copyConfig = copyConfig;
             this._focusConfig = focusConfig;
             this._reminderConfig = reminderConfig;
-            this._showedReminders = new List<IReminderElement>();
         }
 
         public IEnumerable<IStackElement> GetCopies()
@@ -110,15 +107,8 @@ namespace MyTools.Desktop.App.Services
 
                     return new ReminderElement($"{reminderTimeSpan} - {reminderText}", reminderTime, this._reminderConfig);
                 })
-                .Where(x => x != null && !x.IsShown)
-                //.Where(x => FilterByShowedReminders(x))
+                .Where(x => x != null)
                 .ToList();
         }
-
-        //internal bool FilterByShowedReminders(IReminderElement reminder)
-        //{
-        //    bool isAllreadyShowed = this._showedReminders.Where(x => x.CreatedAt < DateTime.UtcNow).Any(x => x.TimeSpan.Equals(reminder.TimeSpan));
-        //    return !isAllreadyShowed;
-        //}
     }
 }

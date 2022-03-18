@@ -10,5 +10,7 @@ namespace MyTools.Desktop.App.Services
         UIElement BuildUIElement();
 
         UIElement BuildUIElement(string textValue);
+
+        IStackElement KeepItOpen();
     }
 }

@@ -10,6 +10,7 @@ namespace MyTools.Desktop.App.Models
         public StackConfig()
         {
             this.BackgroundOpacity = 1;
+            this.PositionOnScreen = PositionOnScreen.Right;
         }
 
         public double ClipboardLeftMargin { get; set; }
@@ -27,5 +28,13 @@ namespace MyTools.Desktop.App.Models
         public Func<Brush> BorderBrush { get; set; }
 
         public Func<string, object> FuncFindResource { get; set; }
+
+        public PositionOnScreen PositionOnScreen { get; set; }
+    }
+
+    public enum PositionOnScreen
+    {
+        Left = 1,
+        Right = 2
     }
 }

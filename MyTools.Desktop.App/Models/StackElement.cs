@@ -21,7 +21,7 @@ namespace MyTools.Desktop.App.Models
                 FontStyle = FontStyles.Normal,
                 Margin = new Thickness { Left = 5 },
                 Foreground = config.ForegroundColor,
-                HorizontalAlignment = HorizontalAlignment.Left,
+                HorizontalAlignment = config.PositionOnScreen == PositionOnScreen.Right ? HorizontalAlignment.Left : HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.NoWrap,
                 FontSize = 15,
@@ -34,7 +34,7 @@ namespace MyTools.Desktop.App.Models
                 BorderThickness = new Thickness(0),
                 Name = $"copyButton",
                 Content = textBlockMessage,
-                Margin = new Thickness { Left = 10, Right = 20 },
+                Margin = config.PositionOnScreen == PositionOnScreen.Right ? new Thickness { Left = 10, Right = 20 } : new Thickness { Left = 20, Right = 10 },
                 Cursor = Cursors.Hand,
                 Style = (Style)config.FuncFindResource("defaultButtonTempalate"),
             };
@@ -50,11 +50,11 @@ namespace MyTools.Desktop.App.Models
                 Background = config.BackgroundColor,
                 Opacity = config.BackgroundOpacity,
                 Margin = new Thickness { Left = 0, Top = 5, Right = 0, Bottom = 5 },
-                BorderThickness = new Thickness { Left = 2 },
+                BorderThickness = config.PositionOnScreen == PositionOnScreen.Right ? new Thickness { Left = 2 } : new Thickness { Right = 2 },
                 BorderBrush = config.BorderBrush.Invoke(),
                 Uid = Guid.NewGuid().ToString(),
                 Child = button,
-                CornerRadius = new CornerRadius(2)
+                CornerRadius = config.PositionOnScreen == PositionOnScreen.Right ? new CornerRadius(2, 0, 0, 2) : new CornerRadius(0, 2, 2, 0)
             };
 
             if (config.ClipboardLeftMargin > 0)

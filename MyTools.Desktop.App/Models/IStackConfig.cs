@@ -22,5 +22,7 @@ namespace MyTools.Desktop.App.Models
         Func<Brush> BorderBrush { get; set; }
 
         Func<string, object> FuncFindResource { get; set; }
+
+        PositionOnScreen PositionOnScreen { get; set; }
     }
 }

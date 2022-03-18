@@ -50,6 +50,7 @@ namespace MyTools.Desktop.App
 
             window.OnLoadClipboards();
             window.OnLoadFocus();
+            window.OnLoadReminders();
         }
     }
 

@@ -10,8 +10,6 @@ namespace MyTools.Desktop.App.Models
 
         void SetLastFocusAt();
 
-        IFocusElement KeepItOpen();
-
         UIElement BuildUIElementEnd();
     }
 }

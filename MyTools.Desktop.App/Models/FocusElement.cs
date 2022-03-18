@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyTools.Desktop.App.Services;
+using System;
 using System.Windows;
 
 namespace MyTools.Desktop.App.Models
@@ -28,7 +29,7 @@ namespace MyTools.Desktop.App.Models
             this.LastFocusAt = DateTime.UtcNow.Add(_timeSpan);
         }
 
-        public IFocusElement KeepItOpen()
+        public IStackElement KeepItOpen()
         {
             this._config.IsStackOpen = true;
             return this;

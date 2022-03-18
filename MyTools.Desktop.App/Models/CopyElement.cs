@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using MyTools.Desktop.App.Services;
+using System.Windows;
 
 namespace MyTools.Desktop.App.Models
 {
@@ -22,6 +23,11 @@ namespace MyTools.Desktop.App.Models
         public UIElement BuildUIElement(string textValue)
         {
             return StackElement.BuildUIElement(textValue, this._config);
+        }
+
+        public IStackElement KeepItOpen()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

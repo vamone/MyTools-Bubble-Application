@@ -38,7 +38,8 @@
 
     <Grid x:Name="GridMain" Margin="0,0,0,100">
         <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0">
-            <StackPanel x:Name="WorkArea" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <StackPanel x:Name="WorkArea" Orientation="Vertical" VerticalAlignment="Center"/>
+            <StackPanel x:Name="ReminderArea" Orientation="Vertical" VerticalAlignment="Center"/>
             <StackPanel x:Name="FocusArea" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </StackPanel>
     </Grid>

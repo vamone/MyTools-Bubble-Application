@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyTools.Desktop.App.Services;
+using System;
 using System.Windows;
 
 namespace MyTools.Desktop.App.Models
@@ -18,8 +19,6 @@ namespace MyTools.Desktop.App.Models
 
         public TimeSpan TimeSpan { get; private set; }
 
-        public bool IsShown { get; set; }
-
         public UIElement BuildUIElement()
         {
             return StackElement.BuildUIElement(this._textValue, this._config);
@@ -30,15 +29,10 @@ namespace MyTools.Desktop.App.Models
             return StackElement.BuildUIElement(textValue, this._config);
         }
 
-        public IReminderElement KeepItOpen()
+        public IStackElement KeepItOpen()
         {
             this._config.IsStackOpen = true;
             return this;
-        }
-
-        public void MarkAsShowed()
-        {
-            this.IsShown = true;
         }
     }
 }
