@@ -5,7 +5,7 @@ namespace MyTools.Desktop.App.Helpers
 {
     public static class FileHelper
     {
-        public static void CreateIfNotExists(string fileName)
+        public static void CreateIfNotExists(string fileName, string defaultValue = null)
         {
             string binPath = AppDomain.CurrentDomain.BaseDirectory;
             string filePath = Path.Combine(binPath, fileName);
@@ -13,6 +13,11 @@ namespace MyTools.Desktop.App.Helpers
             if (!File.Exists(filePath))
             {
                 File.Create(filePath);
+
+                if (!string.IsNullOrWhiteSpace(defaultValue))
+                {
+                    File.WriteAllText(filePath, defaultValue);
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 using MyTools.Desktop.App.Models;
 using MyTools.Desktop.App.Services;
 using MyTools.Desktop.App.Utilities;
+using MyTools.Desktop.App2.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,9 +35,25 @@ namespace MyTools.Desktop.App
 
         IFocusElement _focusElement;
 
+        readonly IDataReaderService<ICollection<string>> _dataService;
+
+        readonly IDataReaderService<Settings> _settingsService;
+
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+
+            //this._dataService = new DataReaderService<ICollection<string>>(new DataFileConfig
+            //{
+            //    Name = "data.json",
+            //    DefaultValue = "[ My first clipboard. ]"
+            //});
+
+            //this._settingsService = new DataReaderService<Settings>(new DataFileConfig
+            //{
+            //    Name = "settings.json",
+            //    DefaultValue = "{\"WindowOpacity\":1.0,\"ClipboardLeftMargin\":180.0,\"PositionTop\":376.0,\"PositionLeft\":3639.0}"
+            //});
 
             this.GridMain.MouseDown += OnMouseDown;
 
