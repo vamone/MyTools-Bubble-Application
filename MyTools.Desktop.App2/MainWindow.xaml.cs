@@ -110,6 +110,11 @@ namespace MyTools.Desktop.App
         {
             this.FocusArea.Children.Clear();
 
+            if(this._focusElement == null)
+            {
+                return;
+            }
+
             bool isTimerWaiting = this._focusElement.LastFocusAt == DateTime.MinValue;
             if (isTimerWaiting)
             {
