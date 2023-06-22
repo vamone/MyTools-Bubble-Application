@@ -15,343 +15,342 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace MyTools.Desktop.App
+namespace MyTools.Desktop.App;
+
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
+    readonly DispatcherTimer _topMostResolveTimer;
+
+    readonly DispatcherTimer _reminderTimer;
+
+    readonly DispatcherTimer _updatesCheckTimer;
+
+    readonly DispatcherTimer _focusTimer;
+
+    readonly IStackService _stackService;
+
+    Settings _settings;
+
+    DateTime _nextCheckUpdatesAt;
+
+    IFocusElement _focusElement;
+
+    readonly IFileReaderService<ICollection<string>> _dataService;
+
+    readonly IFileReaderService<Settings> _settingsService;
+
+    public MainWindow(IFileReaderService<ICollection<string>> dataService)
     {
-        readonly DispatcherTimer _topMostResolveTimer;
+        this.InitializeComponent();
 
-        readonly DispatcherTimer _reminderTimer;
+        //this._dataService = new DataReaderService<ICollection<string>>(new DataFileConfig
+        //{
+        //    Name = "data.json",
+        //    DefaultValue = "[ My first clipboard. ]"
+        //});
 
-        readonly DispatcherTimer _updatesCheckTimer;
+        //this._settingsService = new DataReaderService<Settings>(new DataFileConfig
+        //{
+        //    Name = "settings.json",
+        //    DefaultValue = "{\"WindowOpacity\":1.0,\"ClipboardLeftMargin\":180.0,\"PositionTop\":376.0,\"PositionLeft\":3639.0}"
+        //});
 
-        readonly DispatcherTimer _focusTimer;
+        this.GridMain.MouseDown += OnMouseDown;
 
-        readonly IStackService _stackService;
+        this._topMostResolveTimer = new DispatcherTimer();
+        this._topMostResolveTimer.Tick += TopMostResoveEventProcessor;
+        this._topMostResolveTimer.Interval = new TimeSpan(0, 0, 1);
 
-        Settings _settings;
+        this._reminderTimer = new DispatcherTimer();
+        this._reminderTimer.Tick += ReminderTimerEventProcessor;
+        this._reminderTimer.Interval = new TimeSpan(0, 0, 10);
 
-        DateTime _nextCheckUpdatesAt;
+        this._updatesCheckTimer = new DispatcherTimer();
+        this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
+        this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
+        this._updatesCheckTimer.IsEnabled = false;
 
-        IFocusElement _focusElement;
+        this._focusTimer = new DispatcherTimer();
+        this._focusTimer.Tick += FocusEventProcessor;
+        this._focusTimer.Interval = new TimeSpan(0, 0, 1);
 
-        readonly IDataReaderService<ICollection<string>> _dataService;
+        //Move this
+        this._settings = SettingsUtility.Get();
 
-        readonly IDataReaderService<Settings> _settingsService;
-
-        public MainWindow()
+        var copyConfig = new StackConfig<ICopyElement>
         {
-            this.InitializeComponent();
+            ForegroundColor = Brushes.Gray,
+            BackgroundColor = Brushes.Black,
+            BorderBrush = () => BrushesUtility.GetRandomBrush(),
+            ClickAction = (s, e) => this.CopyClick(s, e),
+            FuncFindResource = (a) => FindResource(a),
+            ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
+            BackgroundOpacity = this._settings.WindowOpacity
+        };
 
-            //this._dataService = new DataReaderService<ICollection<string>>(new DataFileConfig
-            //{
-            //    Name = "data.json",
-            //    DefaultValue = "[ My first clipboard. ]"
-            //});
+        var focusConfig = new StackConfig<IFocusElement>
+        {
+            ForegroundColor = Brushes.White,
+            BackgroundColor = Brushes.Red,
+            BorderBrush = () => Brushes.Red,
+            ClickAction = (s, e) => this.StartFocusTimer(s, e),
+            FuncFindResource = (a) => FindResource(a),
+            ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
+            BackgroundOpacity = this._settings.WindowOpacity
+        };
 
-            //this._settingsService = new DataReaderService<Settings>(new DataFileConfig
-            //{
-            //    Name = "settings.json",
-            //    DefaultValue = "{\"WindowOpacity\":1.0,\"ClipboardLeftMargin\":180.0,\"PositionTop\":376.0,\"PositionLeft\":3639.0}"
-            //});
+        var reminderConfig = new StackConfig<IReminderElement>
+        {
+            ForegroundColor = Brushes.White,
+            BackgroundColor = Brushes.DarkGreen,
+            BorderBrush = () =>  Brushes.DarkGreen,
+            FuncFindResource = (a) => FindResource(a),
+            ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
+            BackgroundOpacity = this._settings.WindowOpacity
+        };
 
-            this.GridMain.MouseDown += OnMouseDown;
+        this._stackService = new StackService(copyConfig, focusConfig, reminderConfig, dataService);
+    }
 
-            this._topMostResolveTimer = new DispatcherTimer();
-            this._topMostResolveTimer.Tick += TopMostResoveEventProcessor;
-            this._topMostResolveTimer.Interval = new TimeSpan(0, 0, 1);
+    public void OnLoadClipboards()
+    {
+        this.WorkArea.Children.Clear();
 
-            this._reminderTimer = new DispatcherTimer();
-            this._reminderTimer.Tick += ReminderTimerEventProcessor;
-            this._reminderTimer.Interval = new TimeSpan(0, 0, 10);
+        var stackElements = this._stackService.GetCopies();
+        foreach (var stack in stackElements)
+        {
+            this.WorkArea.Children.Add(stack.BuildUIElement());
+        }
+    }
 
-            this._updatesCheckTimer = new DispatcherTimer();
-            this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
-            this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
-            this._updatesCheckTimer.IsEnabled = false;
+    public void OnLoadFocus()
+    {
+        this.FocusArea.Children.Clear();
 
-            this._focusTimer = new DispatcherTimer();
-            this._focusTimer.Tick += FocusEventProcessor;
-            this._focusTimer.Interval = new TimeSpan(0, 0, 1);
-
-            //Move this
-            this._settings = SettingsUtility.Get();
-
-            var copyConfig = new StackConfig<ICopyElement>
-            {
-                ForegroundColor = Brushes.Gray,
-                BackgroundColor = Brushes.Black,
-                BorderBrush = () => BrushesUtility.GetRandomBrush(),
-                ClickAction = (s, e) => this.CopyClick(s, e),
-                FuncFindResource = (a) => FindResource(a),
-                ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
-                BackgroundOpacity = this._settings.WindowOpacity
-            };
-
-            var focusConfig = new StackConfig<IFocusElement>
-            {
-                ForegroundColor = Brushes.White,
-                BackgroundColor = Brushes.Red,
-                BorderBrush = () => Brushes.Red,
-                ClickAction = (s, e) => this.StartFocusTimer(s, e),
-                FuncFindResource = (a) => FindResource(a),
-                ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
-                BackgroundOpacity = this._settings.WindowOpacity
-            };
-
-            var reminderConfig = new StackConfig<IReminderElement>
-            {
-                ForegroundColor = Brushes.White,
-                BackgroundColor = Brushes.DarkGreen,
-                BorderBrush = () =>  Brushes.DarkGreen,
-                FuncFindResource = (a) => FindResource(a),
-                ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
-                BackgroundOpacity = this._settings.WindowOpacity
-            };
-
-            this._stackService = new StackService(copyConfig, focusConfig, reminderConfig);
+        if(this._focusElement == null)
+        {
+            return;
         }
 
-        public void OnLoadClipboards()
+        bool isTimerWaiting = this._focusElement.LastFocusAt == DateTime.MinValue;
+        if (isTimerWaiting)
         {
-            this.WorkArea.Children.Clear();
-
-            var stackElements = this._stackService.GetCopies();
-            foreach (var stack in stackElements)
-            {
-                this.WorkArea.Children.Add(stack.BuildUIElement());
-            }
+            this.FocusArea.Children.Add(this._focusElement.BuildUIElement());
+            return;
         }
 
-        public void OnLoadFocus()
+        bool hasTimerFinished = this._focusElement.LastFocusAt != DateTime.MinValue && this._focusElement.LastFocusAt < DateTime.UtcNow;
+        if (hasTimerFinished)
         {
-            this.FocusArea.Children.Clear();
-
-            if(this._focusElement == null)
-            {
-                return;
-            }
-
-            bool isTimerWaiting = this._focusElement.LastFocusAt == DateTime.MinValue;
-            if (isTimerWaiting)
-            {
-                this.FocusArea.Children.Add(this._focusElement.BuildUIElement());
-                return;
-            }
-
-            bool hasTimerFinished = this._focusElement.LastFocusAt != DateTime.MinValue && this._focusElement.LastFocusAt < DateTime.UtcNow;
-            if (hasTimerFinished)
-            {
-                this._focusTimer.Stop();
-                this.FocusArea.Children.Add(this._focusElement.BuildUIElementEnd());           
-                return;
-            }
-
-            var focusTimeSpan = this._focusElement.LastFocusAt.Subtract(DateTime.UtcNow);
-
-            string timelapsOutput = focusTimeSpan.Minutes < 1 ? focusTimeSpan.Seconds.ToString("00") : $"{focusTimeSpan.Minutes:00}:{focusTimeSpan.Seconds:00}";
-
-            var element = this._focusElement.KeepItOpen().BuildUIElement(timelapsOutput);
-            this.FocusArea.Children.Add(element);
+            this._focusTimer.Stop();
+            this.FocusArea.Children.Add(this._focusElement.BuildUIElementEnd());           
+            return;
         }
 
-        public void OnLoadReminders()
+        var focusTimeSpan = this._focusElement.LastFocusAt.Subtract(DateTime.UtcNow);
+
+        string timelapsOutput = focusTimeSpan.Minutes < 1 ? focusTimeSpan.Seconds.ToString("00") : $"{focusTimeSpan.Minutes:00}:{focusTimeSpan.Seconds:00}";
+
+        var element = this._focusElement.KeepItOpen().BuildUIElement(timelapsOutput);
+        this.FocusArea.Children.Add(element);
+    }
+
+    public void OnLoadReminders()
+    {
+        this.ReminderArea.Children.Clear();
+
+        var reminderElements = this._stackService.GetReminders();
+        foreach (var reminderElement in reminderElements)
         {
-            this.ReminderArea.Children.Clear();
+            var timeSpanNow = DateTime.UtcNow.TimeOfDay;
 
-            var reminderElements = this._stackService.GetReminders();
-            foreach (var reminderElement in reminderElements)
+            if (reminderElement.TimeSpan.Hours == timeSpanNow.Hours && reminderElement.TimeSpan.Minutes == timeSpanNow.Minutes)
             {
-                var timeSpanNow = DateTime.UtcNow.TimeOfDay;
-
-                if (reminderElement.TimeSpan.Hours == timeSpanNow.Hours && reminderElement.TimeSpan.Minutes == timeSpanNow.Minutes)
-                {
-                    var element = reminderElement.KeepItOpen().BuildUIElement();
-                    this.ReminderArea.Children.Add(element);
-                }
+                var element = reminderElement.KeepItOpen().BuildUIElement();
+                this.ReminderArea.Children.Add(element);
             }
         }
+    }
 
-        private void UpdatesCheckTimerEventProcessor(object sender, EventArgs e)
+    private void UpdatesCheckTimerEventProcessor(object sender, EventArgs e)
+    {
+        if (this._nextCheckUpdatesAt >= DateTime.Now)
         {
-            if (this._nextCheckUpdatesAt >= DateTime.Now)
+            return;
+        }
+
+        //bool hasUpdates = UpdateHelper.HasUpdates(Assembly.GetExecutingAssembly(), null);
+        //if (hasUpdates)
+        //{
+        //    var updateAvailableResults = UpdateAppMessageBoxWrapper.Show("New version available. Download and update?", "MyTools Updates", MessageBoxButton.YesNoCancel);
+        //    if (updateAvailableResults == MessageBoxResult.Cancel || updateAvailableResults == MessageBoxResult.No ||
+        //          updateAvailableResults == MessageBoxResult.None)
+        //    {
+        //        this._nextCheckUpdatesAt = DateTime.Now.AddHours(24);
+        //        return;
+        //    }
+
+        //    if (updateAvailableResults == MessageBoxResult.Yes)
+        //    {
+        //        Process.Start("MyTools.Desktop.Updater.exe");
+        //        Process.GetCurrentProcess().Kill();
+        //    }
+        //}
+    }
+
+    private void FocusEventProcessor(object sender, EventArgs e)
+    {
+        this.OnLoadFocus();
+    }
+
+    private void TopMostResoveEventProcessor(object sender, EventArgs e)
+    {
+        bool isActive = this.WindowState == WindowState.Normal;
+        if (isActive)
+        {
+            this.Topmost = true;
+        }
+
+        bool isMinimized = this.WindowState == WindowState.Minimized;
+        if (isMinimized)
+        {
+            this.Topmost = false;
+        }
+    }
+
+    private void ReminderTimerEventProcessor(object sender, EventArgs e)
+    {
+        this.OnLoadReminders();
+    }
+
+    private Thread ModifyElementThread<E>(object element, int threadSleepInMimiseconds, Action<E> action, DispatcherPriority dispatcherPriority = DispatcherPriority.Normal)
+    {
+        return new Thread(() =>
+        {
+            if (threadSleepInMimiseconds > 0)
             {
-                return;
+                Thread.Sleep(threadSleepInMimiseconds);
             }
 
-            //bool hasUpdates = UpdateHelper.HasUpdates(Assembly.GetExecutingAssembly(), null);
-            //if (hasUpdates)
-            //{
-            //    var updateAvailableResults = UpdateAppMessageBoxWrapper.Show("New version available. Download and update?", "MyTools Updates", MessageBoxButton.YesNoCancel);
-            //    if (updateAvailableResults == MessageBoxResult.Cancel || updateAvailableResults == MessageBoxResult.No ||
-            //          updateAvailableResults == MessageBoxResult.None)
-            //    {
-            //        this._nextCheckUpdatesAt = DateTime.Now.AddHours(24);
-            //        return;
-            //    }
+            this.Dispatcher.Invoke(DispatcherPriority.Normal, action, element);
+        });
+    }
 
-            //    if (updateAvailableResults == MessageBoxResult.Yes)
-            //    {
-            //        Process.Start("MyTools.Desktop.Updater.exe");
-            //        Process.GetCurrentProcess().Kill();
-            //    }
-            //}
-        }
+    private void CopyClick(object sender, RoutedEventArgs e)
+    {
+        var button = sender as Button;
+        var border = button.Parent as Border;
+        var textBlock = button.Content as TextBlock;
 
-        private void FocusEventProcessor(object sender, EventArgs e)
+        border.Background = Brushes.Green;
+        textBlock.Foreground = Brushes.Black;
+
+        Clipboard.SetText(textBlock.Text);
+
+        this.ModifyElementThread<TextBlock>(textBlock, 3000, (a) => this.ChangeClipboardTextColour(a, this._settings.WindowOpacity)).Start();
+        this.ModifyElementThread<Border>(border, 3000, (a) => this.ChangeClipboardBorderColor(a)).Start();
+    }
+
+    private void StartFocusTimer(object sender, RoutedEventArgs e)
+    {
+        if (this._focusTimer.IsEnabled)
         {
-            this.OnLoadFocus();
+            this._focusTimer.Stop();
+            return;
         }
 
-        private void TopMostResoveEventProcessor(object sender, EventArgs e)
+        this._focusElement.SetLastFocusAt();
+        this._focusTimer.Start();
+    }
+
+    private void ChangeClipboardBorderColor(Border border)
+    {
+        border.Background = Brushes.Black;
+    }
+
+    private void ChangeClipboardTextColour(TextBlock textBlock, double windowOpacity)
+    {
+        textBlock.Foreground = windowOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
+    }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        this._settings = SettingsUtility.Get();
+
+        this.Top = this._settings.PositionTop;
+        this.Left = this._settings.PositionLeft;
+        this.Height = SystemParameters.PrimaryScreenHeight;
+
+        //this.WorkArea.HorizontalAlignment = HorizontalAlignment.Left;
+        //this.FocusArea.HorizontalAlignment = HorizontalAlignment.Left;
+
+        if (!this._topMostResolveTimer.IsEnabled)
         {
-            bool isActive = this.WindowState == WindowState.Normal;
-            if (isActive)
-            {
-                this.Topmost = true;
-            }
-
-            bool isMinimized = this.WindowState == WindowState.Minimized;
-            if (isMinimized)
-            {
-                this.Topmost = false;
-            }
+            this._topMostResolveTimer.Start();
         }
 
-        private void ReminderTimerEventProcessor(object sender, EventArgs e)
+        if (!this._reminderTimer.IsEnabled)
         {
-            this.OnLoadReminders();
+            this._reminderTimer.Start();
         }
 
-        private Thread ModifyElementThread<E>(object element, int threadSleepInMimiseconds, Action<E> action, DispatcherPriority dispatcherPriority = DispatcherPriority.Normal)
+        if (!this._updatesCheckTimer.IsEnabled)
         {
-            return new Thread(() =>
-            {
-                if (threadSleepInMimiseconds > 0)
-                {
-                    Thread.Sleep(threadSleepInMimiseconds);
-                }
-
-                this.Dispatcher.Invoke(DispatcherPriority.Normal, action, element);
-            });
+            this._updatesCheckTimer.Start();
         }
 
-        private void CopyClick(object sender, RoutedEventArgs e)
+        this._focusElement = this._stackService.GetFocus().FirstOrDefault();
+
+        this.OnLoadClipboards();
+        this.OnLoadFocus();
+        this.OnLoadReminders();
+    }
+
+    private void OnMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
         {
-            var button = sender as Button;
-            var border = button.Parent as Border;
-            var textBlock = button.Content as TextBlock;
-
-            border.Background = Brushes.Green;
-            textBlock.Foreground = Brushes.Black;
-
-            Clipboard.SetText(textBlock.Text);
-
-            this.ModifyElementThread<TextBlock>(textBlock, 3000, (a) => this.ChangeClipboardTextColour(a, this._settings.WindowOpacity)).Start();
-            this.ModifyElementThread<Border>(border, 3000, (a) => this.ChangeClipboardBorderColor(a)).Start();
+            DragMove();
         }
 
-        private void StartFocusTimer(object sender, RoutedEventArgs e)
-        {
-            if (this._focusTimer.IsEnabled)
-            {
-                this._focusTimer.Stop();
-                return;
-            }
-
-            this._focusElement.SetLastFocusAt();
-            this._focusTimer.Start();
-        }
-
-        private void ChangeClipboardBorderColor(Border border)
-        {
-            border.Background = Brushes.Black;
-        }
-
-        private void ChangeClipboardTextColour(TextBlock textBlock, double windowOpacity)
-        {
-            textBlock.Foreground = windowOpacity >= 0.5 ? Brushes.Gray : Brushes.Black;
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            this._settings = SettingsUtility.Get();
-
-            this.Top = this._settings.PositionTop;
-            this.Left = this._settings.PositionLeft;
-            this.Height = SystemParameters.PrimaryScreenHeight;
-
-            //this.WorkArea.HorizontalAlignment = HorizontalAlignment.Left;
-            //this.FocusArea.HorizontalAlignment = HorizontalAlignment.Left;
-
-            if (!this._topMostResolveTimer.IsEnabled)
-            {
-                this._topMostResolveTimer.Start();
-            }
-
-            if (!this._reminderTimer.IsEnabled)
-            {
-                this._reminderTimer.Start();
-            }
-
-            if (!this._updatesCheckTimer.IsEnabled)
-            {
-                this._updatesCheckTimer.Start();
-            }
-
-            this._focusElement = this._stackService.GetFocus().FirstOrDefault();
-
-            this.OnLoadClipboards();
-            this.OnLoadFocus();
-            this.OnLoadReminders();
-        }
-
-        private void OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                DragMove();
-            }
-
-            if (e.RightButton == MouseButtonState.Pressed)
-            {
-                bool isSettingsWindowOpened = WindowHelper.IsWindowOpened<SettingsWindow>();
-                if (isSettingsWindowOpened)
-                {
-                    var window = WindowHelper.GetWindowByClassName<SettingsWindow>();
-                    window.Close();
-                    return;
-                }
-
-                var settingsWindow = new SettingsWindow();
-                settingsWindow.Show();
-            }
-
-            if (e.ChangedButton == MouseButton.Left)
-            {
-                bool isDoubleClick = e.ClickCount >= 2;
-                if (isDoubleClick)
-                {
-                    this.WindowState = WindowState.Minimized;
-                }
-            }
-        }
-
-        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        if (e.RightButton == MouseButtonState.Pressed)
         {
             bool isSettingsWindowOpened = WindowHelper.IsWindowOpened<SettingsWindow>();
             if (isSettingsWindowOpened)
             {
                 var window = WindowHelper.GetWindowByClassName<SettingsWindow>();
-
                 window.Close();
-
                 return;
             }
 
             var settingsWindow = new SettingsWindow();
-
             settingsWindow.Show();
         }
+
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            bool isDoubleClick = e.ClickCount >= 2;
+            if (isDoubleClick)
+            {
+                this.WindowState = WindowState.Minimized;
+            }
+        }
+    }
+
+    private void SettingButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool isSettingsWindowOpened = WindowHelper.IsWindowOpened<SettingsWindow>();
+        if (isSettingsWindowOpened)
+        {
+            var window = WindowHelper.GetWindowByClassName<SettingsWindow>();
+
+            window.Close();
+
+            return;
+        }
+
+        var settingsWindow = new SettingsWindow();
+
+        settingsWindow.Show();
     }
 }

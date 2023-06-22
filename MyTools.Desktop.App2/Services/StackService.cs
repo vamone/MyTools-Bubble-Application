@@ -1,114 +1,124 @@
 ﻿using MyTools.Desktop.App.Helpers;
 using MyTools.Desktop.App.Models;
 using MyTools.Desktop.App.Utilities;
+using MyTools.Desktop.App2.ConfigOptions;
+using MyTools.Desktop.App2.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MyTools.Desktop.App.Services
+namespace MyTools.Desktop.App.Services;
+
+public class StackService : IStackService
 {
-    public class StackService : IStackService
+    readonly IStackConfig<ICopyElement> _copyConfig;
+
+    readonly IStackConfig<IFocusElement> _focusConfig;
+
+    readonly IStackConfig<IReminderElement> _reminderConfig;
+
+    readonly IFileReaderService<ICollection<string>> _dataService;
+
+    public StackService(
+        IStackConfig<ICopyElement> copyConfig, 
+        IStackConfig<IFocusElement> focusConfig, 
+        IStackConfig<IReminderElement> reminderConfig,
+        IFileReaderService<ICollection<string>> dataService)
     {
-        readonly IStackConfig<ICopyElement> _copyConfig;
+        this._copyConfig = copyConfig;
+        this._focusConfig = focusConfig;
+        this._reminderConfig = reminderConfig;
 
-        readonly IStackConfig<IFocusElement> _focusConfig;
+        this._dataService = dataService;
+    }
 
-        readonly IStackConfig<IReminderElement> _reminderConfig;
+    public IEnumerable<IStackElement> GetCopies()
+    {
+        return this._dataService.Get()
+            .Where(x => !x.StartsWith("!")
+            && !x.StartsWith("#")
+            && !x.StartsWith("?")
+            && !string.IsNullOrWhiteSpace(x)).Select(x => new CopyElement(x, this._copyConfig)).ToList();
+    }
 
-        public StackService(IStackConfig<ICopyElement> copyConfig, IStackConfig<IFocusElement> focusConfig, IStackConfig<IReminderElement> reminderConfig)
-        {
-            this._copyConfig = copyConfig;
-            this._focusConfig = focusConfig;
-            this._reminderConfig = reminderConfig;
-        }
+    public IEnumerable<IFocusElement> GetFocus()
+    {
+        return this._dataService.Get()
+           .Where(x => x.StartsWith("?")
+            && !string.IsNullOrWhiteSpace(x))
+           .Select(x =>
+           {
+               var focusData = x.Split('|');
 
-        public IEnumerable<IStackElement> GetCopies()
-        {
-            return DataUtility.Get()
-                .Where(x => !x.StartsWith("!")
-                && !x.StartsWith("#")
-                && !x.StartsWith("?")
-                && !string.IsNullOrWhiteSpace(x)).Select(x => new CopyElement(x, this._copyConfig)).ToList();
-        }
+               string textData = focusData.FirstOrDefault();
+               string regexData = focusData.LastOrDefault();
 
-        public IEnumerable<IFocusElement> GetFocus()
-        {
-            return DataUtility.Get()
-               .Where(x => x.StartsWith("?"))
-               .Select(x =>
+               if (string.IsNullOrWhiteSpace(textData) || string.IsNullOrWhiteSpace(regexData))
                {
-                   var focusData = x.Split('|');
+                   return null;
+               }
 
-                   string textData = focusData.FirstOrDefault();
-                   string regexData = focusData.LastOrDefault();
+               string focusStartText = RegexHelper.GetGroupValue(textData, regexData, 1);
+               string focusTimeSpan = RegexHelper.GetGroupValue(textData, regexData, 2);
+               string focusEndText = RegexHelper.GetGroupValue(textData, regexData, 3);
 
-                   if (string.IsNullOrWhiteSpace(textData) || string.IsNullOrWhiteSpace(regexData))
-                   {
-                       return null;
-                   }
+               if (string.IsNullOrWhiteSpace(focusStartText))
+               {
+                   return null;
+               }
 
-                   string focusStartText = RegexHelper.GetGroupValue(textData, regexData, 1);
-                   string focusTimeSpan = RegexHelper.GetGroupValue(textData, regexData, 2);
-                   string focusEndText = RegexHelper.GetGroupValue(textData, regexData, 3);
+               if (string.IsNullOrWhiteSpace(focusTimeSpan))
+               {
+                   return null;
+               }
 
-                   if (string.IsNullOrWhiteSpace(focusStartText))
-                   {
-                       return null;
-                   }
+               if (string.IsNullOrWhiteSpace(focusEndText))
+               {
+                   return null;
+               }
 
-                   if (string.IsNullOrWhiteSpace(focusTimeSpan))
-                   {
-                       return null;
-                   }
+               TimeSpan.TryParse(focusTimeSpan, out TimeSpan focusTime);
 
-                   if (string.IsNullOrWhiteSpace(focusEndText))
-                   {
-                       return null;
-                   }
+               return new FocusElement(focusStartText, focusEndText, focusTime, this._focusConfig);
+           })
+           .Where(x => x != null)
+           .ToList();
+    }
 
-                   TimeSpan.TryParse(focusTimeSpan, out TimeSpan focusTime);
+    public IEnumerable<IReminderElement> GetReminders()
+    {
+        return this._dataService.Get()
+            .Where(x => x.StartsWith("!"))
+            .Select(x =>
+            {
+                var reminderData = x.Split('|');
 
-                   return new FocusElement(focusStartText, focusEndText, focusTime, this._focusConfig);
-               })
-               .Where(x => x != null)
-               .ToList();
-        }
+                string textData = reminderData.FirstOrDefault();
+                string regexData = reminderData.LastOrDefault();
 
-        public IEnumerable<IReminderElement> GetReminders()
-        {
-            return DataUtility.Get()
-                .Where(x => x.StartsWith("!"))
-                .Select(x =>
+                if (string.IsNullOrWhiteSpace(textData) || string.IsNullOrWhiteSpace(regexData))
                 {
-                    var reminderData = x.Split('|');
+                    return null;
+                }
 
-                    string textData = reminderData.FirstOrDefault();
-                    string regexData = reminderData.LastOrDefault();
+                string reminderTimeSpan = RegexHelper.GetGroupValue(textData, regexData, 1);
+                string reminderText = RegexHelper.GetGroupValue(textData, regexData, 2);
 
-                    if (string.IsNullOrWhiteSpace(textData) || string.IsNullOrWhiteSpace(regexData))
-                    {
-                        return null;
-                    }
+                if (string.IsNullOrWhiteSpace(reminderTimeSpan))
+                {
+                    return null;
+                }
 
-                    string reminderTimeSpan = RegexHelper.GetGroupValue(textData, regexData, 1);
-                    string reminderText = RegexHelper.GetGroupValue(textData, regexData, 2);
+                if (string.IsNullOrWhiteSpace(reminderText))
+                {
+                    return null;
+                }
 
-                    if (string.IsNullOrWhiteSpace(reminderTimeSpan))
-                    {
-                        return null;
-                    }
+                TimeSpan.TryParse(reminderTimeSpan, out TimeSpan reminderTime);
 
-                    if (string.IsNullOrWhiteSpace(reminderText))
-                    {
-                        return null;
-                    }
-
-                    TimeSpan.TryParse(reminderTimeSpan, out TimeSpan reminderTime);
-
-                    return new ReminderElement($"{reminderTimeSpan} - {reminderText}", reminderTime, this._reminderConfig);
-                })
-                .Where(x => x != null)
-                .ToList();
-        }
+                return new ReminderElement($"{reminderTimeSpan} - {reminderText}", reminderTime, this._reminderConfig);
+            })
+            .Where(x => x != null)
+            .ToList();
     }
 }
