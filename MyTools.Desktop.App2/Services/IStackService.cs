@@ -9,5 +9,5 @@ public interface IStackService
 
     IEnumerable<IStackElement> GetCopies();
 
-    IEnumerable<IFocusElement> GetFocus();
+    IFocusElement GetFocus();
 }

@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\IStackService.cs" />
+    <Compile Remove="Services\StackService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="copyIcon.ico" />
   </ItemGroup>
 
@@ -28,10 +33,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Managers\" />
   </ItemGroup>
 
   <ItemGroup>

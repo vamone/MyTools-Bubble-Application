@@ -44,12 +44,11 @@ public class StackService : IStackService
             && !string.IsNullOrWhiteSpace(x)).Select(x => new CopyElement(x, this._copyConfig)).ToList();
     }
 
-    public IEnumerable<IFocusElement> GetFocus()
+    public IFocusElement GetFocus()
     {
-        return this._dataService.Get()
-           .Where(x => x.StartsWith("?")
-            && !string.IsNullOrWhiteSpace(x))
-           .Select(x =>
+        var focus = this._dataService.Get().Where(x => x.StartsWith("?"));
+
+        return focus!.Select(x =>
            {
                var focusData = x.Split('|');
 
@@ -82,10 +81,8 @@ public class StackService : IStackService
 
                TimeSpan.TryParse(focusTimeSpan, out TimeSpan focusTime);
 
-               return new FocusElement(focusStartText, focusEndText, focusTime, this._focusConfig);
-           })
-           .Where(x => x != null)
-           .ToList();
+               return new FocusElement(focusStartText, focusEndText, focusTime, _focusConfig);
+           }).FirstOrDefault(x => x != null);
     }
 
     public IEnumerable<IReminderElement> GetReminders()

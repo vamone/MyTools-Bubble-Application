@@ -2,6 +2,7 @@
 using MyTools.Desktop.App.Models;
 using MyTools.Desktop.App.Services;
 using MyTools.Desktop.App.Utilities;
+using MyTools.Desktop.App2.Managers;
 using MyTools.Desktop.App2.Services;
 using System;
 using System.Collections.Generic;
@@ -27,8 +28,6 @@ public partial class MainWindow : Window
 
     readonly DispatcherTimer _focusTimer;
 
-    readonly IStackService _stackService;
-
     //Settings _settings;
 
     DateTime _nextCheckUpdatesAt;
@@ -39,10 +38,18 @@ public partial class MainWindow : Window
 
     readonly IFileReaderService<Settings> _settingsService;
 
-    public MainWindow(IStackService stackService, IFileReaderService<Settings> settingsService)
+    readonly WorkAreaManager _workAreaManager;
+
+    readonly ClipboardsManager _clipboardsManager;
+
+    public MainWindow(
+        IFileReaderService<Settings> settingsService, 
+        WorkAreaManager workAreaManager, 
+        ClipboardsManager clipboardsManager)
     {
-        this._stackService = stackService;
         this._settingsService = settingsService;
+        this._workAreaManager = workAreaManager;
+        this._clipboardsManager = clipboardsManager;
 
         this.InitializeComponent();
 
@@ -70,10 +77,11 @@ public partial class MainWindow : Window
     {
         this.WorkArea.Children.Clear();
 
-        var stackElements = this._stackService.GetCopies();
-        foreach (var stack in stackElements)
+        var clipboards = this._clipboardsManager.GetClipboards();
+        foreach (var clipboard in clipboards)
         {
-            this.WorkArea.Children.Add(stack.BuildUIElement());
+            var element = this._workAreaManager.BuildClipboardElement(clipboard, this.CopyClick);
+            this.WorkArea.Children.Add(element);
         }
     }
 
@@ -113,15 +121,20 @@ public partial class MainWindow : Window
     {
         this.ReminderArea.Children.Clear();
 
-        var reminderElements = this._stackService.GetReminders();
-        foreach (var reminderElement in reminderElements)
+        var reminderElements = this._clipboardsManager.GetReminders();
+        foreach (var reminder in reminderElements)
         {
             var timeSpanNow = DateTime.UtcNow.TimeOfDay;
 
-            if (reminderElement.TimeSpan.Hours == timeSpanNow.Hours && reminderElement.TimeSpan.Minutes == timeSpanNow.Minutes)
+            if (reminder.TimeSpan.Hours == timeSpanNow.Hours && reminder.TimeSpan.Minutes == timeSpanNow.Minutes)
             {
-                var element = reminderElement.KeepItOpen().BuildUIElement();
-                this.ReminderArea.Children.Add(element);
+                var element = this._workAreaManager.BuildClipboardElement(reminder.Text, this.CopyClick, isReminder: true);
+
+                this.WorkArea.Children.Add(element);
+
+                //this._showedReminders.Add(reminder);
+
+                this.ModifyElementThread<Border>(element, 60000, (a) => this.WorkArea.Children.Remove(a)).Start();
             }
         }
     }
@@ -251,7 +264,7 @@ public partial class MainWindow : Window
         //    this._updatesCheckTimer.Start();
         //}
 
-        this._focusElement = this._stackService.GetFocus().FirstOrDefault();
+        this._focusElement = this._clipboardsManager.GetFocus();
 
         this.OnLoadClipboards();
         this.OnLoadFocus();
