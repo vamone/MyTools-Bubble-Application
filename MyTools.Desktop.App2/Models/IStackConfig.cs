@@ -7,7 +7,7 @@ namespace MyTools.Desktop.App.Models
 {
     public interface IStackConfig<T>
     {
-        double ClipboardLeftMargin { get; set; }
+        double ClipboardLeftMargin { get; }
 
         SolidColorBrush ForegroundColor { get; set; }
 

@@ -19,6 +19,8 @@ public class StackService : IStackService
 
     readonly IFileReaderService<ICollection<string>> _dataService;
 
+    readonly IFileReaderService<Settings> _settingsService;
+
     public StackService(
         IStackConfig<ICopyElement> copyConfig, 
         IStackConfig<IFocusElement> focusConfig, 
@@ -30,6 +32,7 @@ public class StackService : IStackService
         this._reminderConfig = reminderConfig;
 
         this._dataService = dataService;
+        //this._settingsService = settingsService;
     }
 
     public IEnumerable<IStackElement> GetCopies()

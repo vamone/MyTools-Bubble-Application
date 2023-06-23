@@ -23,37 +23,28 @@ public partial class MainWindow : Window
 
     readonly DispatcherTimer _reminderTimer;
 
-    readonly DispatcherTimer _updatesCheckTimer;
+    //readonly DispatcherTimer _updatesCheckTimer;
 
     readonly DispatcherTimer _focusTimer;
 
     readonly IStackService _stackService;
 
-    Settings _settings;
+    //Settings _settings;
 
     DateTime _nextCheckUpdatesAt;
 
     IFocusElement _focusElement;
 
-    readonly IFileReaderService<ICollection<string>> _dataService;
+    //readonly IFileReaderService<ICollection<string>> _dataService;
 
     readonly IFileReaderService<Settings> _settingsService;
 
-    public MainWindow(IFileReaderService<ICollection<string>> dataService)
+    public MainWindow(IStackService stackService, IFileReaderService<Settings> settingsService)
     {
+        this._stackService = stackService;
+        this._settingsService = settingsService;
+
         this.InitializeComponent();
-
-        //this._dataService = new DataReaderService<ICollection<string>>(new DataFileConfig
-        //{
-        //    Name = "data.json",
-        //    DefaultValue = "[ My first clipboard. ]"
-        //});
-
-        //this._settingsService = new DataReaderService<Settings>(new DataFileConfig
-        //{
-        //    Name = "settings.json",
-        //    DefaultValue = "{\"WindowOpacity\":1.0,\"ClipboardLeftMargin\":180.0,\"PositionTop\":376.0,\"PositionLeft\":3639.0}"
-        //});
 
         this.GridMain.MouseDown += OnMouseDown;
 
@@ -65,51 +56,14 @@ public partial class MainWindow : Window
         this._reminderTimer.Tick += ReminderTimerEventProcessor;
         this._reminderTimer.Interval = new TimeSpan(0, 0, 10);
 
-        this._updatesCheckTimer = new DispatcherTimer();
-        this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
-        this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
-        this._updatesCheckTimer.IsEnabled = false;
+        //this._updatesCheckTimer = new DispatcherTimer();
+        //this._updatesCheckTimer.Tick += UpdatesCheckTimerEventProcessor;
+        //this._updatesCheckTimer.Interval = new TimeSpan(0, 0, 5);
+        //this._updatesCheckTimer.IsEnabled = false;
 
         this._focusTimer = new DispatcherTimer();
         this._focusTimer.Tick += FocusEventProcessor;
         this._focusTimer.Interval = new TimeSpan(0, 0, 1);
-
-        //Move this
-        this._settings = SettingsUtility.Get();
-
-        var copyConfig = new StackConfig<ICopyElement>
-        {
-            ForegroundColor = Brushes.Gray,
-            BackgroundColor = Brushes.Black,
-            BorderBrush = () => BrushesUtility.GetRandomBrush(),
-            ClickAction = (s, e) => this.CopyClick(s, e),
-            FuncFindResource = (a) => FindResource(a),
-            ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
-            BackgroundOpacity = this._settings.WindowOpacity
-        };
-
-        var focusConfig = new StackConfig<IFocusElement>
-        {
-            ForegroundColor = Brushes.White,
-            BackgroundColor = Brushes.Red,
-            BorderBrush = () => Brushes.Red,
-            ClickAction = (s, e) => this.StartFocusTimer(s, e),
-            FuncFindResource = (a) => FindResource(a),
-            ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
-            BackgroundOpacity = this._settings.WindowOpacity
-        };
-
-        var reminderConfig = new StackConfig<IReminderElement>
-        {
-            ForegroundColor = Brushes.White,
-            BackgroundColor = Brushes.DarkGreen,
-            BorderBrush = () =>  Brushes.DarkGreen,
-            FuncFindResource = (a) => FindResource(a),
-            ClipboardLeftMargin = this._settings.ClipboardLeftMargin,
-            BackgroundOpacity = this._settings.WindowOpacity
-        };
-
-        this._stackService = new StackService(copyConfig, focusConfig, reminderConfig, dataService);
     }
 
     public void OnLoadClipboards()
@@ -236,7 +190,7 @@ public partial class MainWindow : Window
         });
     }
 
-    private void CopyClick(object sender, RoutedEventArgs e)
+    public void CopyClick(object sender, RoutedEventArgs e)
     {
         var button = sender as Button;
         var border = button.Parent as Border;
@@ -247,11 +201,11 @@ public partial class MainWindow : Window
 
         Clipboard.SetText(textBlock.Text);
 
-        this.ModifyElementThread<TextBlock>(textBlock, 3000, (a) => this.ChangeClipboardTextColour(a, this._settings.WindowOpacity)).Start();
+        this.ModifyElementThread<TextBlock>(textBlock, 3000, (a) => this.ChangeClipboardTextColour(a, this._settingsService.Get().WindowOpacity)).Start();
         this.ModifyElementThread<Border>(border, 3000, (a) => this.ChangeClipboardBorderColor(a)).Start();
     }
 
-    private void StartFocusTimer(object sender, RoutedEventArgs e)
+    public void StartFocusTimer(object sender, RoutedEventArgs e)
     {
         if (this._focusTimer.IsEnabled)
         {
@@ -275,10 +229,8 @@ public partial class MainWindow : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        this._settings = SettingsUtility.Get();
-
-        this.Top = this._settings.PositionTop;
-        this.Left = this._settings.PositionLeft;
+        this.Top = this._settingsService.Get().PositionTop;
+        this.Left = this._settingsService.Get().PositionLeft;
         this.Height = SystemParameters.PrimaryScreenHeight;
 
         //this.WorkArea.HorizontalAlignment = HorizontalAlignment.Left;
@@ -294,10 +246,10 @@ public partial class MainWindow : Window
             this._reminderTimer.Start();
         }
 
-        if (!this._updatesCheckTimer.IsEnabled)
-        {
-            this._updatesCheckTimer.Start();
-        }
+        //if (!this._updatesCheckTimer.IsEnabled)
+        //{
+        //    this._updatesCheckTimer.Start();
+        //}
 
         this._focusElement = this._stackService.GetFocus().FirstOrDefault();
 
