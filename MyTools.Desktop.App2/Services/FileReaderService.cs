@@ -16,24 +16,24 @@ public abstract class FileReaderService<T> : IFileReaderService<T> where T : cla
         FileHelper.CreateIfNotExists(this._fileConfig.Name, this._fileConfig.DefaultValue);
     }
 
-    public T Get()
+    public virtual T Get()
     {
         string json = File.ReadAllText(this._fileConfig.Name);
         if (string.IsNullOrWhiteSpace(json))
         {
-            throw new Exception();
+            return default(T);
         }
 
         var data = JsonSerializer.Deserialize<T>(json);
         if (data == null)
         {
-            throw new Exception();
+            return default(T);
         }
 
         return data;
     }
 
-    public void Set(T obj)
+    public virtual void Set(T obj)
     {
         string json = JsonSerializer.Serialize(obj);
         if (string.IsNullOrWhiteSpace(json))

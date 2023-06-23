@@ -4,8 +4,10 @@ using Microsoft.Extensions.Hosting;
 using MyTools.Desktop.App.Models;
 using MyTools.Desktop.App.Services;
 using MyTools.Desktop.App.Utilities;
+using MyTools.Desktop.App2;
 using MyTools.Desktop.App2.ConfigOptions;
 using MyTools.Desktop.App2.Managers;
+using MyTools.Desktop.App2.Models;
 using MyTools.Desktop.App2.Services;
 using System;
 using System.Collections.Generic;
@@ -30,16 +32,18 @@ public partial class App : Application
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddSingleton<MainWindow>();
+                services.AddSingleton<LoggerWindow>();
 
                 services.AddTransient<IFileReaderService<ICollection<string>>, DataFileReaderService>();
                 services.AddTransient<IFileReaderService<Settings>, SettingsFileReaderService>();
+                services.AddTransient<IFileReaderService<ICollection<TaskLogger>>, TaskLoggerService>();
 
                 services.AddSingleton<IStackConfig<IFocusElement>>(x => new StackConfig<IFocusElement>(x.GetRequiredService<IFileReaderService<Settings>>())
                 {
                     ForegroundColor = Brushes.White,
                     BackgroundColor = Brushes.Red,
                     BorderBrush = () => Brushes.Red,
-                    ClickAction = (s, e) => x.GetRequiredService<MainWindow>().StartFocusTimer(s, e),
+                    ClickAction = (s, e) => x.GetRequiredService<MainWindow>().StartFocusTimerWithLogger(s, e),
                     FuncFindResource = (a) => x.GetRequiredService<MainWindow>().FindResource(a),
                 });
 

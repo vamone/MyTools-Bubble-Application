@@ -12,13 +12,14 @@ namespace MyTools.Desktop.App.Helpers
 
             if (!File.Exists(filePath))
             {
-                File.Create(filePath);
+                File.Create(filePath).Dispose();
 
                 if (!string.IsNullOrWhiteSpace(defaultValue))
                 {
                     File.WriteAllText(filePath, defaultValue);
                 }
             }
+           
         }
     }
 }

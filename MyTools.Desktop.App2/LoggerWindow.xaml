@@ -1,0 +1,33 @@
+﻿<Window x:Class="MyTools.Desktop.App2.LoggerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyTools.Desktop.App2"
+        mc:Ignorable="d"
+        Title="LoggerWindow" Height="500" Width="800">
+    <Grid>
+        <StackPanel Orientation="Vertical" Margin="10,10,10,10">
+
+            <Label Content="Task Id" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <TextBox x:Name="textBoxTaskId" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <Label Content="Description" HorizontalAlignment="Left"  VerticalAlignment="Top"/>
+            <RichTextBox x:Name="richTextBoxDescription" Height="338">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text="RichTextBox"/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,10">
+
+                
+                <Button x:Name="buttonSaveStart" Content="Save and Start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="buttonSaveStart_Click" />
+                <Button x:Name="buttonStartOnly" Content="Start Only" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="buttonStartOnly_Click" Margin="10,0,0,0"/>
+                <Button x:Name="buttonLogOnly" Content="Log Only" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="buttonLogOnly_Click" Margin="10,0,0,0"/>
+                <Button x:Name="buttonCancel" Content="Cancel" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="buttonCancel_Click" Margin="10,0,0,0" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

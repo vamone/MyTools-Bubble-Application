@@ -2,7 +2,9 @@
 using MyTools.Desktop.App.Models;
 using MyTools.Desktop.App.Services;
 using MyTools.Desktop.App.Utilities;
+using MyTools.Desktop.App2;
 using MyTools.Desktop.App2.Managers;
+using MyTools.Desktop.App2.Models;
 using MyTools.Desktop.App2.Services;
 using System;
 using System.Collections.Generic;
@@ -42,12 +44,16 @@ public partial class MainWindow : Window
 
     readonly ClipboardsManager _clipboardsManager;
 
+    readonly IFileReaderService<ICollection<TaskLogger>> _taskService;
+
     public MainWindow(
-        IFileReaderService<Settings> settingsService, 
+        IFileReaderService<Settings> settingsService,
+        IFileReaderService<ICollection<TaskLogger>> taskService,
         WorkAreaManager workAreaManager, 
         ClipboardsManager clipboardsManager)
     {
         this._settingsService = settingsService;
+        this._taskService = taskService;
         this._workAreaManager = workAreaManager;
         this._clipboardsManager = clipboardsManager;
 
@@ -218,6 +224,19 @@ public partial class MainWindow : Window
         this.ModifyElementThread<Border>(border, 3000, (a) => this.ChangeClipboardBorderColor(a)).Start();
     }
 
+    public void StartFocusTimerWithLogger(object sender, RoutedEventArgs e)
+    {
+        bool isWindowOpened = WindowHelper.IsWindowOpened<LoggerWindow>();
+        if(isWindowOpened)
+        {
+            var window = WindowHelper.GetWindowByClassName<LoggerWindow>();
+            window.Close();
+            return;
+        }
+
+        new LoggerWindow(this._taskService).Show();
+    }
+
     public void StartFocusTimer(object sender, RoutedEventArgs e)
     {
         if (this._focusTimer.IsEnabled)
@@ -314,8 +333,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        var settingsWindow = new SettingsWindow();
-
-        settingsWindow.Show();
+        new SettingsWindow().Show();
     }
 }
