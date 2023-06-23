@@ -55,12 +55,20 @@ public partial class LoggerWindow : Window
     {
         try
         {
+            string taskId = this.textBoxTaskId.Text;
+            string taskDescription = new TextRange(this.richTextBoxDescription.Document.ContentStart, this.richTextBoxDescription.Document.ContentEnd).Text;
+
+            if(string.IsNullOrWhiteSpace(taskId) || string.IsNullOrWhiteSpace(taskDescription))
+            {
+                return;
+            }
+
             var tasks = this._taskService.Get() ?? new List<TaskLogger>();
 
             tasks.Add(new TaskLogger
             {
-                TaskId = this.textBoxTaskId.Text,
-                TaskDescription = new TextRange(this.richTextBoxDescription.Document.ContentStart, this.richTextBoxDescription.Document.ContentEnd).Text
+                TaskId = taskId,
+                TaskDescription = taskDescription
             });
 
             this._taskService.Set(tasks);
